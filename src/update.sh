@@ -1,6 +1,6 @@
 #!/bin/bash
 
 git add *
-git commit
+git commit -a
 
 git push -u origin master

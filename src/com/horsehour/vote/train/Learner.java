@@ -53,7 +53,7 @@ import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
 import com.horsehour.vote.rule.LearnedRule;
 import com.horsehour.vote.rule.VotingRule;
-import com.horsehour.vote.train.Eval.DataBridge;
+import com.horsehour.vote.train.Eval1.DataBridge;
 
 import smile.classification.SVM.Multiclass;
 import smile.math.Math;
@@ -71,14 +71,12 @@ import smile.math.kernel.LinearKernel;
  * @author Chunheng Jiang
  * @version 1.0
  * @since 2:50:51 PM, July 3, 2016
- *
  */
 public class Learner {
 	public Function<Float, Float> logistic = x -> (float) (1.0 / (1.0 + Math.exp(-x)));
 	public String meta = "";
 
-	public Learner() {
-	}
+	public Learner() {}
 
 	public Learner(String meta) {
 		this.meta = meta;
@@ -172,8 +170,7 @@ public class Learner {
 		} else if (nameAlgo.contains("naivebayes")) {
 			int dim = trainset.getLeft()[0].length;
 
-			smile.classification.NaiveBayes.Trainer trainer = new smile.classification.NaiveBayes.Trainer(
-					smile.classification.NaiveBayes.Model.MULTINOMIAL, numItem, dim);
+			smile.classification.NaiveBayes.Trainer trainer = new smile.classification.NaiveBayes.Trainer(smile.classification.NaiveBayes.Model.MULTINOMIAL, numItem, dim);
 			smile.classification.NaiveBayes algo = trainer.train(trainset.getLeft(), trainset.getRight());
 
 			mechanism = profile -> {
@@ -186,8 +183,7 @@ public class Learner {
 			};
 		} else if (nameAlgo.contains("svm")) {
 			float c = 3;
-			smile.classification.SVM.Trainer<double[]> trainer = new smile.classification.SVM.Trainer<>(
-					new LinearKernel(), c, numItem, Multiclass.ONE_VS_ONE);
+			smile.classification.SVM.Trainer<double[]> trainer = new smile.classification.SVM.Trainer<>(new LinearKernel(), c, numItem, Multiclass.ONE_VS_ONE);
 			smile.classification.SVM<double[]> algo = trainer.train(trainset.getLeft(), trainset.getRight());
 			mechanism = profile -> {
 				List<Float> feature = DataEngine.getFeatures(profile);
@@ -204,18 +200,13 @@ public class Learner {
 			/**
 			 * using different kernels
 			 */
-			List<smile.math.kernel.MercerKernel<double[]>> kernelList = Arrays.asList(
-					new smile.math.kernel.LinearKernel(), new smile.math.kernel.GaussianKernel(0.1),
-					new smile.math.kernel.PolynomialKernel(2), new smile.math.kernel.HyperbolicTangentKernel(),
-					new smile.math.kernel.HellingerKernel(), new smile.math.kernel.LaplacianKernel(0.2),
-					new smile.math.kernel.PearsonKernel());
+			List<smile.math.kernel.MercerKernel<double[]>> kernelList = Arrays.asList(new smile.math.kernel.LinearKernel(), new smile.math.kernel.GaussianKernel(0.1), new smile.math.kernel.PolynomialKernel(2), new smile.math.kernel.HyperbolicTangentKernel(), new smile.math.kernel.HellingerKernel(), new smile.math.kernel.LaplacianKernel(0.2), new smile.math.kernel.PearsonKernel());
 
 			List<smile.classification.SVM<double[]>> algoList = new ArrayList<>();
 
 			int nKernel = kernelList.size();
 			for (int i = 0; i < nKernel; i++) {
-				trainer = new smile.classification.SVM.Trainer<double[]>(kernelList.get(i), c, numItem,
-						Multiclass.ONE_VS_ONE);
+				trainer = new smile.classification.SVM.Trainer<double[]>(kernelList.get(i), c, numItem, Multiclass.ONE_VS_ONE);
 				algoList.add(trainer.train(trainset.getLeft(), trainset.getRight()));
 			}
 			mechanism = profile -> {
@@ -269,8 +260,7 @@ public class Learner {
 			String impurity = "entropy";
 			int nClasse = profiles.get(0).getProfile().getNumItem(), nTree = 5, maxDepth = 5, maxBins = 32,
 					seed = 12345;
-			RandomForestModel model = org.apache.spark.mllib.tree.RandomForest.trainClassifier(trainingData, nClasse,
-					categoricalFeaturesInfo, nTree, featureSubsetStrategy, impurity, maxDepth, maxBins, seed);
+			RandomForestModel model = org.apache.spark.mllib.tree.RandomForest.trainClassifier(trainingData, nClasse, categoricalFeaturesInfo, nTree, featureSubsetStrategy, impurity, maxDepth, maxBins, seed);
 
 			mechanism = profile -> {
 				List<Float> feature = DataEngine.getFeatures(profile);
@@ -374,8 +364,7 @@ public class Learner {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(meta);
-		sb.append("Random Forest (nTree = " + nTree).append(", depth = " + depth)
-				.append(", nFeature = " + nFeature + ")");
+		sb.append("Random Forest (nTree = " + nTree).append(", depth = " + depth).append(", nFeature = " + nFeature + ")");
 		learnedRule.setName(sb.toString());
 
 		try {
@@ -418,8 +407,7 @@ public class Learner {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(meta);
-		sb.append("Random Forest (nTree = " + nTree).append(", depth = " + depth)
-				.append(", nFeature = " + nFeature + ")");
+		sb.append("Random Forest (nTree = " + nTree).append(", depth = " + depth).append(", nFeature = " + nFeature + ")");
 		rules.get(rules.size() - 1).setName(sb.toString());
 
 		try {
@@ -484,8 +472,7 @@ public class Learner {
 
 		int nHidden = 5;
 		smile.classification.NeuralNetwork.Trainer trainer = null;
-		trainer = new smile.classification.NeuralNetwork.Trainer(
-				smile.classification.NeuralNetwork.ErrorFunction.CROSS_ENTROPY, dim, nHidden, nItem);
+		trainer = new smile.classification.NeuralNetwork.Trainer(smile.classification.NeuralNetwork.ErrorFunction.CROSS_ENTROPY, dim, nHidden, nItem);
 		smile.classification.NeuralNetwork algo = trainer.train(trainset.getLeft(), trainset.getRight());
 
 		Function<Profile<Integer>, List<Integer>> mechanism = profile -> {
@@ -506,7 +493,6 @@ public class Learner {
 	}
 
 	public VotingRule getDeepLearningRule(List<ChoiceTriple<Integer>> profiles) {
-
 		Pair<double[][], int[]> trainset = DataEngine.getFlatDataSet(profiles);
 
 		double[][] features = trainset.getLeft();
@@ -528,13 +514,14 @@ public class Learner {
 
 		int nInput = dim, nOutput = nItem, nHidden = 20, nRun = 100;
 
-		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed)
-				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS)
-				.iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate)
-				.momentum(momentum).regularization(true).l1(learningRate * 0.005).list()
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder()
+				.seed(seed).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT)
+				.updater(Updater.NESTEROVS).iterations(1).activation("relu")
+				.weightInit(WeightInit.XAVIER).learningRate(learningRate)
+				.momentum(momentum).regularization(true)
+				.l1(learningRate * 0.005).list()
 				.layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build())
-				.layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden)
-						.nOut(nOutput).build())
+				.layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden).nOut(nOutput).build())
 				.pretrain(false).backprop(true).build();
 
 		MultiLayerNetwork algo = new MultiLayerNetwork(conf);
@@ -559,9 +546,7 @@ public class Learner {
 		LearnedRule learnedRule = new LearnedRule(mechanism);
 		StringBuffer sb = new StringBuffer();
 		sb.append(meta);
-		sb.append("DL (").append("nhidden = " + nHidden).append(", lr = " + learningRate)
-				.append(", momentum = " + momentum).append(", optimizer = sgd").append(", activation = relu|softmax")
-				.append(", l1 = true").append(", lossfunction = negativeloglikelihood)");
+		sb.append("DL (").append("nhidden = " + nHidden).append(", lr = " + learningRate).append(", momentum = " + momentum).append(", optimizer = sgd").append(", activation = relu|softmax").append(", l1 = true").append(", lossfunction = negativeloglikelihood)");
 		learnedRule.setName(sb.toString());
 
 		try {
@@ -595,13 +580,7 @@ public class Learner {
 
 		int nRun = 100, width = (int) Math.factorial(nItem);
 
-		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed)
-				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS)
-				.iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate)
-				.momentum(0.98).regularization(true).list()
-				.layer(0, new ConvolutionLayer.Builder(nItem, width).nOut(1).build())
-				.layer(1, new OutputLayer.Builder(LossFunction.MCXENT).activation("softmax").nOut(nItem).build())
-				.cnnInputSize(nItem, width, nItem).pretrain(false).backprop(true).build();
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS).iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate).momentum(0.98).regularization(true).list().layer(0, new ConvolutionLayer.Builder(nItem, width).nOut(1).build()).layer(1, new OutputLayer.Builder(LossFunction.MCXENT).activation("softmax").nOut(nItem).build()).cnnInputSize(nItem, width, nItem).pretrain(false).backprop(true).build();
 
 		MultiLayerNetwork algo = new MultiLayerNetwork(conf);
 		algo.init();
@@ -659,14 +638,7 @@ public class Learner {
 
 		int nInput = dim, nOutput = nItem, nHidden = 20, nRun = 100;
 
-		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed)
-				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS)
-				.iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate)
-				.momentum(0.98).regularization(true).l1(learningRate * 0.005).list()
-				.layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build())
-				.layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden)
-						.nOut(nOutput).build())
-				.pretrain(false).backprop(true).build();
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS).iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate).momentum(0.98).regularization(true).l1(learningRate * 0.005).list().layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build()).layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden).nOut(nOutput).build()).pretrain(false).backprop(true).build();
 
 		MultiLayerNetwork algoDL = new MultiLayerNetwork(conf);
 		algoDL.init();
@@ -715,10 +687,7 @@ public class Learner {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(meta);
-		sb.append("Ensemble - Random Forest and Deep Learning - ").append("SRF (nTree = " + nTree)
-				.append(", depth = " + depth + ", nFeature = " + nFeature + "), ")
-				.append("DL (nHidden = " + nHidden + ", ").append("lr = " + learningRate + ", ")
-				.append("batch = " + batch + ")");
+		sb.append("Ensemble - Random Forest and Deep Learning - ").append("SRF (nTree = " + nTree).append(", depth = " + depth + ", nFeature = " + nFeature + "), ").append("DL (nHidden = " + nHidden + ", ").append("lr = " + learningRate + ", ").append("batch = " + batch + ")");
 		learnedRule.setName(sb.toString());
 
 		try {
@@ -745,8 +714,7 @@ public class Learner {
 
 		int nHidden = 10;
 		smile.classification.NeuralNetwork.Trainer trainer = null;
-		trainer = new smile.classification.NeuralNetwork.Trainer(
-				smile.classification.NeuralNetwork.ErrorFunction.CROSS_ENTROPY, dim, nHidden, nItem);
+		trainer = new smile.classification.NeuralNetwork.Trainer(smile.classification.NeuralNetwork.ErrorFunction.CROSS_ENTROPY, dim, nHidden, nItem);
 		smile.classification.NeuralNetwork algo = trainer.train(trainset.getLeft(), trainset.getRight());
 
 		int nPermutation = permutations.size();
@@ -833,14 +801,7 @@ public class Learner {
 
 		int nInput = dim, nOutput = nItem, nHidden = 20, nRun = 100;
 
-		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed)
-				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS)
-				.iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate)
-				.momentum(0.98).regularization(true).l1(learningRate * 0.005).list()
-				.layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build())
-				.layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden)
-						.nOut(nOutput).build())
-				.pretrain(false).backprop(true).build();
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS).iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate).momentum(0.98).regularization(true).l1(learningRate * 0.005).list().layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build()).layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden).nOut(nOutput).build()).pretrain(false).backprop(true).build();
 
 		MultiLayerNetwork algo = new MultiLayerNetwork(conf);
 		algo.init();
@@ -914,8 +875,7 @@ public class Learner {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(meta);
-		sb.append("Permutated Deep Learning (").append("nHidden = " + nHidden + ", ")
-				.append("lr = " + learningRate + ", ").append("batch = " + batch + ")");
+		sb.append("Permutated Deep Learning (").append("nHidden = " + nHidden + ", ").append("lr = " + learningRate + ", ").append("batch = " + batch + ")");
 		learnedRule.setName(sb.toString());
 
 		try {
@@ -1305,14 +1265,7 @@ public class Learner {
 
 		int nInput = dim, nOutput = nItem, nHidden = 20, nRun = 100;
 
-		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed)
-				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS)
-				.iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate)
-				.momentum(0.98).regularization(true).l1(learningRate * 0.005).list()
-				.layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build())
-				.layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden)
-						.nOut(nOutput).build())
-				.pretrain(false).backprop(true).build();
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS).iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate).momentum(0.98).regularization(true).l1(learningRate * 0.005).list().layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build()).layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden).nOut(nOutput).build()).pretrain(false).backprop(true).build();
 
 		MultiLayerNetwork algoDL = new MultiLayerNetwork(conf);
 		algoDL.init();
@@ -1384,8 +1337,7 @@ public class Learner {
 
 		StringBuffer sb = new StringBuffer();
 		sb.append(meta);
-		sb.append("Permuted Multivariate Decision Tree and Neural Netowrk - ").append("MDT (depth = " + depth)
-				.append("), NN (nhidden = " + nHidden + ", ").append("batch = " + batch + ")");
+		sb.append("Permuted Multivariate Decision Tree and Neural Netowrk - ").append("MDT (depth = " + depth).append("), NN (nhidden = " + nHidden + ", ").append("batch = " + batch + ")");
 		learnedRule.setName(sb.toString());
 
 		try {
@@ -1420,14 +1372,7 @@ public class Learner {
 
 		int nInput = dim, nOutput = nItem, nHidden = 4, nRun = 100;
 
-		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed)
-				.optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS)
-				.iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate)
-				.momentum(0.98).regularization(true).l1(learningRate * 0.005).list()
-				.layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build())
-				.layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden)
-						.nOut(nOutput).build())
-				.pretrain(false).backprop(true).build();
+		MultiLayerConfiguration conf = new NeuralNetConfiguration.Builder().seed(seed).optimizationAlgo(OptimizationAlgorithm.STOCHASTIC_GRADIENT_DESCENT).updater(Updater.NESTEROVS).iterations(1).activation("relu").weightInit(WeightInit.XAVIER).learningRate(learningRate).momentum(0.98).regularization(true).l1(learningRate * 0.005).list().layer(0, new DenseLayer.Builder().nIn(nInput).nOut(nHidden).build()).layer(1, new OutputLayer.Builder(LossFunction.NEGATIVELOGLIKELIHOOD).activation("softmax").nIn(nHidden).nOut(nOutput).build()).pretrain(false).backprop(true).build();
 
 		MultiLayerNetwork algoNN = new MultiLayerNetwork(conf);
 		algoNN.init();
@@ -1611,8 +1556,7 @@ public class Learner {
 
 		int nHidden = 10;
 		smile.classification.NeuralNetwork.Trainer trainerNN = null;
-		trainerNN = new smile.classification.NeuralNetwork.Trainer(
-				smile.classification.NeuralNetwork.ErrorFunction.CROSS_ENTROPY, dim, nHidden, nItem);
+		trainerNN = new smile.classification.NeuralNetwork.Trainer(smile.classification.NeuralNetwork.ErrorFunction.CROSS_ENTROPY, dim, nHidden, nItem);
 
 		smile.classification.NeuralNetwork algoNN = trainerNN.train(trainset.getLeft(), trainset.getRight());
 

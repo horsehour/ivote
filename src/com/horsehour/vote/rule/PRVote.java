@@ -30,7 +30,7 @@ import com.horsehour.vote.axiom.ReversalSymmetryCriterion;
 import com.horsehour.vote.axiom.SchwarzCriterion;
 import com.horsehour.vote.axiom.SmithCriterion;
 import com.horsehour.vote.axiom.VotingAxiom;
-import com.horsehour.vote.train.Eval;
+import com.horsehour.vote.train.Eval1;
 
 /**
  * Voting Rule based on PageRank
@@ -94,7 +94,7 @@ public class PRVote extends ScoredVotingRule {
 	}
 
 	public static void main(String[] args) {
-		Eval eval = new Eval();
+		Eval1 eval = new Eval1();
 		int[] numVotes = MathLib.Series.range(5, 2, 15);
 		VotingRule oracle = new Borda();
 		
