@@ -906,10 +906,6 @@ public class DataEngine {
 			if (winners == null || winners.size() > 1)
 				return null;
 
-			// if (winners.size() > 1)
-			// winners =
-			// Arrays.asList(winners.get(rnd.nextInt(winners.size())));
-
 			if (winners.size() == 1)
 				count.addAndGet(num.intValue());
 			return new ChoiceTriple<>(profile, winners, num.intValue());
@@ -972,7 +968,6 @@ public class DataEngine {
 		while ((winners = rule.getAllWinners(profile)) == null)
 			profile = DataEngine.getRandomProfile(numItem, numVote);
 		return new ChoiceTriple<>(profile, winners, 1);
-
 	}
 
 	/**

@@ -70,7 +70,7 @@ import smile.math.kernel.LinearKernel;
  * 
  * @author Chunheng Jiang
  * @version 1.0
- * @since 2:50:51 PM, Jul 3, 2016
+ * @since 2:50:51 PM, July 3, 2016
  *
  */
 public class Learner {
@@ -2090,7 +2090,7 @@ public class Learner {
 
 	public double[] getMultiClassSVMRule(List<ChoiceTriple<Integer>> profiles, double c, int numItem, int[] numVotes,
 			VotingRule oracle) throws InterruptedException, IOException {
-		String base = "/Users/chjiang/Documents/workspace/isvm/svm_multiclass/";
+		String base = "/Users/chjiang/GitHub/svm/svm_multiclass/";
 		DataEngine.getSVMDataSet(profiles, base + oracle.toString() + "-train.dat");
 
 		StringBuffer sb = new StringBuffer();

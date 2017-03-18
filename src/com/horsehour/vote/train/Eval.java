@@ -60,7 +60,7 @@ import com.horsehour.vote.rule.VotingRule;
  * 
  * @author Chunheng Jiang
  * @version 1.0
- * @since 2:49:12 PM, Jul 4, 2016
+ * @since 2:49:12 PM, July 4, 2016
  */
 public class Eval {
 	/**
@@ -257,10 +257,8 @@ public class Eval {
 			// single winner
 			if (winners == null || winners.size() > 1)
 				return;
-
 			// Long stat = profile.getStat();
 			numTotal.addAndGet(1);
-
 			List<Integer> predicted = learnedRule.getAllWinners(profile);
 			if (match.test(winners, predicted))
 				numMatch.addAndGet(1);
@@ -966,8 +964,7 @@ public class Eval {
 			for (VotingRule rule : rules)
 				satMatrix[i][j++] = axiom.getSatisfiability(profiles, rule);
 		}
-		String outputFile = "/Users/chjiang/Documents/workspace/java/ivote/csc/report/SATTable" + "-m" + numItem
-				+ ".png";
+		String outputFile = "csc/report/SATTable" + "-m" + numItem + ".png";
 		Ace ace = new Ace("SAT to Some Axioms (m = " + numItem + ", n = " + numVote + ")", outputFile);
 		ace.heatmap("", "", xTickLabelList, yTickLabelList, satMatrix);
 	}
