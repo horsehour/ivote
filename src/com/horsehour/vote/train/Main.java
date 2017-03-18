@@ -111,7 +111,7 @@ public class Main {
 		sb.append("\n");
 		sb.append(oracle.toString());
 
-		Eval1 eval = new Eval1();
+		Eval eval = new Eval();
 		for (int nv : evalNumVotes) {
 			double prec = eval.getSimilarity(numItem, nv, oracle, learnedRule);
 			sb.append(String.format(", %.2f", prec));
@@ -125,7 +125,7 @@ public class Main {
 
 	public static Void learnAndEvalRule(int numItem, int numVote, int numSample, VotingRule oracle,
 			List<Integer> evalNumVotes) throws IOException {
-		Eval1 eval = new Eval1();
+		Eval eval = new Eval();
 
 		List<List<ChoiceTriple<Integer>>> samples = null;
 		samples = eval.getSamples(numItem, numVote, Arrays.asList(numSample), oracle, null);

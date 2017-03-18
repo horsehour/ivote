@@ -7,7 +7,7 @@ import java.util.List;
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
 import com.horsehour.vote.Profile;
-import com.horsehour.vote.train.Eval1;
+import com.horsehour.vote.train.Eval;
 
 /**
  * The Oklahoma primary electoral system was a voting system used to elect one
@@ -105,7 +105,7 @@ public class OklahomaVoting extends VotingRule {
 	public static void main(String[] args) {
 		TickClock.beginTick();
 
-		Eval1 eval = new Eval1();
+		Eval eval = new Eval();
 		System.out.println(eval.getSimilarity(3, 11, new Borda(), new OklahomaVoting()));
 
 		TickClock.stopTick();

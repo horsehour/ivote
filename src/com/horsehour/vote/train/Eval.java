@@ -62,7 +62,7 @@ import com.horsehour.vote.rule.VotingRule;
  * @version 1.0
  * @since 2:49:12 PM, July 4, 2016
  */
-public class Eval1 {
+public class Eval {
 	/**
 	 * @param numItem
 	 * @param numVotes
@@ -1064,7 +1064,7 @@ public class Eval1 {
 		// axioms.add(new SmithCriterion());
 		// axioms.add(new SchwarzCriterion());
 
-		Eval1 eval = new Eval1();
+		Eval eval = new Eval();
 
 		List<VotingRule> rules = new ArrayList<>();
 		rules.add(new Baldwin());

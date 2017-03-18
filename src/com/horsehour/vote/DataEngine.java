@@ -91,7 +91,6 @@ public class DataEngine {
 	}
 
 	/**
-	 * 
 	 * @param permutation
 	 * @return random permutation based on an initial permutation
 	 */
@@ -801,16 +800,33 @@ public class DataEngine {
 	}
 
 	/**
+	 * Generate random profile based on Knuth shuffles
+	 * 
 	 * @param numItem
 	 * @param numVote
-	 * @return generate random profile based on Knuth shuffles
+	 * @return random profile in compact format
 	 */
 	public static Profile<Integer> getRandomProfile(int numItem, int numVote) {
+		return getRandomProfile(numItem, numVote, true);
+	}
+
+	/**
+	 * Generate random profile based on Knuth shuffles
+	 * 
+	 * @param numItem
+	 * @param numVote
+	 * @param compact
+	 *            compact or sparse format
+	 * @return random profile
+	 */
+	public static Profile<Integer> getRandomProfile(int numItem, int numVote, boolean compact) {
 		Integer[][] data = new Integer[numVote][];
 		for (int i = 0; i < numVote; i++)
 			data[i] = getRandomPermutation(numItem);
 		Profile<Integer> profile = new Profile<>(data);
-		profile = profile.compress();
+		if (compact)
+			profile = profile.compact();
+		
 		return profile;
 	}
 
@@ -890,8 +906,8 @@ public class DataEngine {
 		distribution.sample(numSample, sampleAECProfile);
 
 		// redundancies number of samples
-		Map<Integer, Long> countTable = Arrays.asList(sampleAECProfile).stream()
-				.collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+		Map<Integer, Long> countTable =
+				Arrays.asList(sampleAECProfile).stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
 		Random rnd = new Random(System.currentTimeMillis());
 		AtomicInteger index = new AtomicInteger(-1), count = new AtomicInteger(0);
@@ -985,8 +1001,8 @@ public class DataEngine {
 	 */
 	public static List<ChoiceTriple<Integer>> getRandomNeutralProfiles(List<List<ChoiceTriple<Integer>>> baseProfiles,
 			int numSample) {
-		List<ChoiceTriple<Integer>> baseProfileList = baseProfiles.stream().flatMap(profiles -> profiles.stream())
-				.collect(Collectors.toList());
+		List<ChoiceTriple<Integer>> baseProfileList =
+				baseProfiles.stream().flatMap(profiles -> profiles.stream()).collect(Collectors.toList());
 
 		List<Integer> copyList = new ArrayList<>();
 		for (ChoiceTriple<Integer> triple : baseProfileList)
@@ -1006,8 +1022,8 @@ public class DataEngine {
 		// sampling according to distribution
 		distribution.sample(numSample, samples);
 
-		Map<Integer, Long> countTable = Arrays.asList(samples).stream()
-				.collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+		Map<Integer, Long> countTable =
+				Arrays.asList(samples).stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
 		NeutralityCriterion criterion = new NeutralityCriterion();
 		List<List<Integer>> permutations = getAllPermutations(numItem);
@@ -1045,8 +1061,8 @@ public class DataEngine {
 	public static List<ChoiceTriple<Integer>> getRandomMonotonicProfiles(List<List<ChoiceTriple<Integer>>> baseProfiles,
 			int numSample) {
 
-		List<ChoiceTriple<Integer>> baseProfileList = baseProfiles.stream().flatMap(profiles -> profiles.stream())
-				.collect(Collectors.toList());
+		List<ChoiceTriple<Integer>> baseProfileList =
+				baseProfiles.stream().flatMap(profiles -> profiles.stream()).collect(Collectors.toList());
 
 		List<Integer> copyList = new ArrayList<>();
 		for (ChoiceTriple<Integer> triple : baseProfileList)
@@ -1065,8 +1081,8 @@ public class DataEngine {
 		Integer[] samples = new Integer[numSample];
 		distribution.sample(numSample, samples);
 
-		Map<Integer, Long> countTable = Arrays.asList(samples).stream()
-				.collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+		Map<Integer, Long> countTable =
+				Arrays.asList(samples).stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
 		MonotonicityCriterion criterion = new MonotonicityCriterion();
 
@@ -1102,8 +1118,8 @@ public class DataEngine {
 	public static List<ChoiceTriple<Integer>> getRandomConsistentProfiles(
 			List<List<ChoiceTriple<Integer>>> baseProfiles, int numSample) {
 
-		List<ChoiceTriple<Integer>> profiles = baseProfiles.stream().flatMap(p -> p.stream())
-				.collect(Collectors.toList());
+		List<ChoiceTriple<Integer>> profiles =
+				baseProfiles.stream().flatMap(p -> p.stream()).collect(Collectors.toList());
 
 		// (winner, index list)
 		Map<List<Integer>, List<Integer>> cluster = IntStream.range(0, profiles.size()).boxed()
@@ -1133,8 +1149,8 @@ public class DataEngine {
 		Integer[] samples = new Integer[numSample];
 		distribution.sample(numSample, samples);
 
-		Map<Integer, Long> countTable = Arrays.asList(samples).stream()
-				.collect(Collectors.groupingBy(e -> e, Collectors.counting()));
+		Map<Integer, Long> countTable =
+				Arrays.asList(samples).stream().collect(Collectors.groupingBy(e -> e, Collectors.counting()));
 
 		count = 0;
 		for (List<Integer> winners : cluster.keySet()) {
@@ -1192,8 +1208,8 @@ public class DataEngine {
 	 * @param dest
 	 * @throws IOException
 	 */
-	public static void getSVMTrainingSet(int numItem, int numVote, int numSample, VotingRule oracle, String dest)
-			throws IOException {
+	public static void getSVMTrainingSet(int numItem, int numVote, int numSample, VotingRule oracle,
+			String dest) throws IOException {
 		List<ChoiceTriple<Integer>> profiles = DataEngine.getRandomLabeledProfiles(numItem, numVote, numSample, oracle);
 		getSVMDataSet(profiles, dest);
 	}
@@ -1320,8 +1336,8 @@ public class DataEngine {
 		meta.append(numItem + "\n");
 		for (int i = 0; i < numItem; i++)
 			meta.append(i + ",c" + i + "\n");
-		OpenOption[] options = { StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
-				StandardOpenOption.WRITE };
+		OpenOption[] options =
+				{ StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.WRITE };
 
 		List<Integer> items = new ArrayList<>();
 		for (int i = 0; i < numItem; i++)
@@ -1332,7 +1348,7 @@ public class DataEngine {
 		AtomicLong count = new AtomicLong(0);
 		stream.forEach(profile -> {
 			count.incrementAndGet();
-			profile = profile.compress();
+			profile = profile.compact();
 			StringBuffer sb = new StringBuffer();
 			sb.append(meta);
 			sb.append(numVote + "," + numVote + "," + profile.data.length + "\n");
@@ -1372,8 +1388,8 @@ public class DataEngine {
 		StringBuffer sb = null;
 		Integer[][] data = null;
 		String socFile = "";
-		OpenOption[] options = { StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				StandardOpenOption.TRUNCATE_EXISTING };
+		OpenOption[] options =
+				{ StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING };
 
 		Profile<Integer> profile = null;
 
@@ -1556,7 +1572,7 @@ public class DataEngine {
 			data[i] = getRandomSinglePeakedVote(Arrays.asList(getRandomPermutation(numItem)));
 
 		Profile<Integer> profile = new Profile<>(data);
-		profile = profile.compress();
+		profile = profile.compact();
 		return profile;
 
 	}
@@ -1573,7 +1589,7 @@ public class DataEngine {
 		for (int i = 0; i < numVote; i++)
 			data[i] = getRandomSinglePeakedVote(axis);
 		Profile<Integer> profile = new Profile<>(data);
-		profile = profile.compress();
+		profile = profile.compact();
 		return profile;
 
 	}
@@ -1595,8 +1611,8 @@ public class DataEngine {
 		StringBuffer sb = null;
 		Integer[][] data = null;
 		String socFile = "";
-		OpenOption[] options = { StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				StandardOpenOption.TRUNCATE_EXISTING };
+		OpenOption[] options =
+				{ StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING };
 
 		Profile<Integer> profile = null;
 		// fixed axis: 0,1,2,...m
@@ -1647,8 +1663,8 @@ public class DataEngine {
 		StringBuffer sb = null;
 		Integer[][] data = null;
 		String socFile = "";
-		OpenOption[] options = { StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				StandardOpenOption.TRUNCATE_EXISTING };
+		OpenOption[] options =
+				{ StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING };
 
 		Profile<Integer> profile = null;
 		int s = 0;
@@ -1700,8 +1716,8 @@ public class DataEngine {
 		StringBuffer sb = null;
 		Integer[][] data = null;
 		String socFile = "";
-		OpenOption[] options = { StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				StandardOpenOption.TRUNCATE_EXISTING };
+		OpenOption[] options =
+				{ StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING };
 
 		Profile<Integer> profile = null;
 		// fixed axis: 0,1,2,...m

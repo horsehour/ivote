@@ -30,7 +30,7 @@ import com.horsehour.vote.rule.RankedPairs;
 import com.horsehour.vote.rule.Schulze;
 import com.horsehour.vote.rule.Veto;
 import com.horsehour.vote.rule.VotingRule;
-import com.horsehour.vote.train.Eval1;
+import com.horsehour.vote.train.Eval;
 
 /**
  *
@@ -88,7 +88,7 @@ public class TikzLog {
 
 	public double[][] getSimilarities(VotingRule oracle, List<VotingRule> rules){
 		int[] numVotes = MathLib.Series.range(5, 2, 15);
-		Eval1 eval = new Eval1();
+		Eval eval = new Eval();
 
 		String name = oracle.toString();
 		double[][] sim = new double[numVotes.length][rules.size()];

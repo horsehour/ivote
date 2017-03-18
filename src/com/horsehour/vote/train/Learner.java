@@ -53,7 +53,7 @@ import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
 import com.horsehour.vote.rule.LearnedRule;
 import com.horsehour.vote.rule.VotingRule;
-import com.horsehour.vote.train.Eval1.DataBridge;
+import com.horsehour.vote.train.Eval.DataBridge;
 
 import smile.classification.SVM.Multiclass;
 import smile.math.Math;

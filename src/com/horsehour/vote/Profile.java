@@ -145,7 +145,7 @@ public class Profile<T> implements Serializable {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Profile<T> compress() {
+	public Profile<T> compact() {
 		int[] fingerprint = getFingerPrint();
 
 		// distinct hash codes
