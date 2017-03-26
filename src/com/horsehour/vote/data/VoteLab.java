@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.data;
 
 import java.io.IOException;
 import java.nio.file.CopyOption;
@@ -32,6 +32,10 @@ import com.horsehour.util.TickClock;
 import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
 import com.horsehour.vote.rule.LearnedRule;
+import com.horsehour.vote.rule.multiseat.Baldwin;
+import com.horsehour.vote.rule.multiseat.Coombs;
+import com.horsehour.vote.rule.multiseat.STVPlus2;
+import com.horsehour.vote.rule.multiseat.VoteResearch;
 
 import smile.classification.LogisticRegression;
 
@@ -757,7 +761,7 @@ public class VoteLab {
 	 *         winners are the values
 	 * @throws IOException
 	 */
-	static Map<String, List<Integer>> parseElectionOutcome(Path outcome) throws IOException {
+	public static Map<String, List<Integer>> parseElectionOutcome(Path outcome) throws IOException {
 		Map<String, List<Integer>> map = new HashMap<>();
 		List<String> lines = Files.readAllLines(outcome);
 		for (String line : lines) {
@@ -1251,8 +1255,7 @@ public class VoteLab {
 		// Files.write(trainPath, lines);
 
 		LearnedRule rule = learn(trainFile);
-		predict(base + "soc-2/", Paths.get(base + "/soc-9-stv-h0c1p1s0r0pf0.txt"), rule);
-
+		predict(base + "/soc-3-hardcase/", Paths.get(base + "soc-3-stv-k1-1000-h0c1p1s0r0pf3.txt"), rule);
 		// experiment(base, "soc-3", trainFile);
 
 		TickClock.stopTick();
@@ -1323,24 +1326,8 @@ public class VoteLab {
 			output[i] = sampleset.getLabel(i);
 		}
 
-		// RandomForest.Trainer trainer = RandomForest.Trainer();
-		// int depth = 5, nTree = 100;
-		// trainer.setMaxNodes(2 * depth - 1);
-		// trainer.setNumTrees(nTree);
-		// int nFeature = (int) Math.floor(Math.sqrt(dim));
-		// trainer.setNumRandomFeatures(nFeature);
-		// RandomForest algo = trainer.train(input,output);
-		// System.out.println("Training Error:" + algo.error());
-
 		LogisticRegression.Trainer trainer = new LogisticRegression.Trainer();
 		LogisticRegression algo = trainer.train(input, output);
-
-		// MaximumCutPlane algo = new MaximumCutPlane();
-		// algo.setLearningRate(1.0E-6).setMaxDepth(5);
-		// algo.train(input, output);
-
-		// LinearMachine algo = new LinearMachine();
-		// algo.setLearningRate(1.0E-3F).setMaxIter(1000).train(input, output);
 
 		Function<Profile<Integer>, List<Integer>> mechanism = profile -> {
 			List<Integer> items = Arrays.asList(profile.getSortedItems());

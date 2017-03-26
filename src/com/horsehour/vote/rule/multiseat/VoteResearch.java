@@ -26,6 +26,7 @@ import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
 import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.VoteLab;
 
 /**
  * Research voting problems

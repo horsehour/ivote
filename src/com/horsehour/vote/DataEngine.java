@@ -40,6 +40,7 @@ import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
 import com.horsehour.vote.axiom.MonotonicityCriterion;
 import com.horsehour.vote.axiom.NeutralityCriterion;
+import com.horsehour.vote.data.VoteLab;
 import com.horsehour.vote.rule.Borda;
 import com.horsehour.vote.rule.Bucklin;
 import com.horsehour.vote.rule.Condorcet;
@@ -56,7 +57,6 @@ import com.horsehour.vote.rule.Veto;
 import com.horsehour.vote.rule.VotingRule;
 import com.horsehour.vote.rule.multiseat.Position;
 import com.horsehour.vote.rule.multiseat.PrefProfile;
-import com.horsehour.vote.rule.multiseat.VoteLab;
 
 /**
  * Preference engine generate preferences, preference profiles and extracting

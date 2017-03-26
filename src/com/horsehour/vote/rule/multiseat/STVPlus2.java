@@ -517,7 +517,7 @@ public class STVPlus2 {
 	 * @return reconstructed profile if there are any candidate has being
 	 *         eliminated, elsewise return the original profile
 	 */
-	Profile<Integer> preprocess(Profile<Integer> profile, List<Integer> state) {
+	public Profile<Integer> preprocess(Profile<Integer> profile, List<Integer> state) {
 		int[] scores = scoring(profile, state);
 		List<Integer> eliminated = new ArrayList<>();
 		for (int i = 0; i < scores.length; i++) {

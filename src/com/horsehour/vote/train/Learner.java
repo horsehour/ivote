@@ -354,7 +354,6 @@ public class Learner {
 		 */
 		Function<Profile<Integer>, List<Integer>> mechanism = profile -> {
 			List<Float> feature = DataEngine.getFeatures(profile);
-
 			double[] x = new double[feature.size()];
 			for (int i = 0; i < feature.size(); i++)
 				x[i] = feature.get(i);

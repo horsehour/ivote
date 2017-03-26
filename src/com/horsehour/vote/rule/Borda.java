@@ -67,7 +67,7 @@ public class Borda extends VotingRule {
 		int[] argmax = MathLib.argmax(scores);
 
 		/**
-		 * select all candidates with the largest scores
+		 * select all candidates with the largest Borda score
 		 */
 		List<T> winners = new ArrayList<>();
 		for (int i : argmax)
@@ -77,7 +77,7 @@ public class Borda extends VotingRule {
 		/**
 		 * select one single winner with the smallest index
 		 */
-//		return Arrays.asList(items[argmax[0]]);
+		// return Arrays.asList(items[argmax[0]]);
 	}
 
 	public <T> int[] getScores(Profile<T> profile, T[] items) {

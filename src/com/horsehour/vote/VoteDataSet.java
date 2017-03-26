@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import com.horsehour.util.MulticoreExecutor;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.rule.multiseat.VoteLab;
+import com.horsehour.vote.data.VoteLab;
 
 /**
  *
