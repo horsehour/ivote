@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
 import java.nio.file.Paths;
@@ -14,8 +14,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.collections4.iterators.PermutationIterator;
 
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 
 /**
  * Elect all possible STV winners using brute force approach. The ultimate goal

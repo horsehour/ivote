@@ -29,13 +29,12 @@ import com.horsehour.ml.data.Data;
 import com.horsehour.ml.data.SampleSet;
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
 import com.horsehour.vote.rule.LearnedRule;
-import com.horsehour.vote.rule.multiseat.Baldwin;
-import com.horsehour.vote.rule.multiseat.Coombs;
-import com.horsehour.vote.rule.multiseat.STVPlus2;
-import com.horsehour.vote.rule.multiseat.VoteResearch;
+import com.horsehour.vote.rule.multiround.Baldwin;
+import com.horsehour.vote.rule.multiround.Coombs;
+import com.horsehour.vote.rule.multiround.STVPlus2;
+import com.horsehour.vote.rule.multiround.VoteResearch;
 
 import smile.classification.LogisticRegression;
 

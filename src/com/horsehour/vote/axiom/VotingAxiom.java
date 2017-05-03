@@ -3,8 +3,8 @@ package com.horsehour.vote.axiom;
 import java.util.List;
 import java.util.stream.Stream;
 
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 import com.horsehour.vote.rule.VotingRule;
 
 /**

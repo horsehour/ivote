@@ -29,11 +29,11 @@ public class VoteSet {
 	/**
 	 * number of candidates
 	 */
-	public int numItem;
+	public int m;
 	/**
 	 * dimension of the extracted input features
 	 */
-	public int dim;
+	public int d;
 
 	public VoteSet(double[][] features, int[][] winners, boolean hotEncoding) {
 		if (features == null || winners == null) {
@@ -51,7 +51,7 @@ public class VoteSet {
 		this.winners = Arrays.copyOf(winners, n);
 		this.hotEncoding = hotEncoding;
 		if (hotEncoding)
-			this.numItem = winners[0].length;
+			this.m = winners[0].length;
 	}
 
 	/**
@@ -81,7 +81,7 @@ public class VoteSet {
 		}
 
 		hotEncoding = true;
-		numItem = k;
+		m = k;
 	}
 
 	/**
@@ -97,7 +97,7 @@ public class VoteSet {
 		List<Integer> winnerList = null;
 		for (int i = 0; i < n; i++) {
 			winnerList = new ArrayList<>();
-			for (int j = 0; j < numItem; j++) {
+			for (int j = 0; j < m; j++) {
 				if (winners[i][j] == 1)
 					winnerList.add(j);
 			}
@@ -124,24 +124,24 @@ public class VoteSet {
 		if (hotEncoding) {
 			for (int i = 0; i < n; i++) {
 				double[] input = features[i];
-				for (int j = 0; j < numItem; j++) {
+				for (int j = 0; j < m; j++) {
 					if (winners[i][j] == 1) {
 						inputs.add(input);
 						outputs.add(j);
 					}
 				}
 			}
-		}else{
+		} else {
 			for (int i = 0; i < n; i++) {
 				double[] input = features[i];
-				for(int w : winners[i]){
+				for (int w : winners[i]) {
 					inputs.add(input);
 					outputs.add(w);
 				}
 			}
 		}
 	}
-	
+
 	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 

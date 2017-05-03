@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -16,8 +16,8 @@ import java.util.TreeMap;
 
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 
 /**
  * Single transferable voting method (STV, a.k.a Cincinnati rule or Hare voting)
@@ -603,7 +603,6 @@ public class MultiSTV {
 		String format = "#h_succ=%d, #node=%d, #score=%d, #cache_hit=%d, #pru_hit=%d, #t=%f, t_score=%f, winners=%s\n";
 		System.out.printf(format, rule.numNodeWH - rule.numSingleL, rule.numNode, rule.numScoring, rule.numCacheHit,
 				rule.numPruneHit, rule.time, rule.timeScoring, winners);
-
 		TickClock.stopTick();
 	}
 }

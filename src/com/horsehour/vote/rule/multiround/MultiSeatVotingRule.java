@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.rule.multiround;
 
 /**
  *

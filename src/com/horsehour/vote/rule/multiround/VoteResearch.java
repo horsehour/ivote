@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -24,8 +24,8 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 import com.horsehour.vote.data.VoteLab;
 
 /**

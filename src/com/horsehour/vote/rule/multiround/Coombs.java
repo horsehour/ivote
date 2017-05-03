@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -9,33 +9,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 
 /**
- *
  * @author Chunheng Jiang
  * @version 1.0
- * @since 10:37:43 PM, Jan 1, 2017
- *
+ * @since 11:06:40 PM, Jan 1, 2017
  */
-
-public class Baldwin extends STVPlus2 {
-	public Map<Integer, Map<Integer, Integer>> prefMatrix;
+public class Coombs extends STVPlus2 {
 	public int n;
 
-	public Baldwin(boolean h, boolean c, boolean p, boolean s, boolean r, int pf) {
+	public Coombs(boolean h, boolean c, boolean p, boolean s, boolean r, int pf) {
 		super(h, c, p, s, r, pf);
 	}
 
 	void elect() {
 		LinkedList<Node> fringe = new LinkedList<>();
 		fringe.add(root);
-
 		trace.put(numNode, numWinner);
 
 		Node next = null;
@@ -107,77 +101,143 @@ public class Baldwin extends STVPlus2 {
 		}
 	}
 
+	void elect(Node node) {
+		List<Integer> state = node.state;
+		if (isUniqueRemaining(state) || (cache && hasVisited(state)) || (pruning && canPrune(state)))
+			return;
+
+		int[][] scores = scoringFirstAndLast(profile, state);
+		int[] maximum = MathLib.argmax(scores[0]);
+
+		if (containsUniqueWinner(state, scores[0]))
+			return;
+
+		maximum = MathLib.argmax(scores[1]);
+		long start = System.nanoTime();
+		List<Integer> tied = new ArrayList<>();
+		for (int i = 0; i < maximum.length; i++)
+			tied.add(state.get(maximum[i]));
+		timeSelectNext += System.nanoTime() - start;
+
+		int numElim = tied.size();
+		numNodeFull += numElim;
+
+		Node child;
+		while ((numElim = tied.size()) > 0) {
+			start = System.nanoTime();
+			int highest = -1, index = -1;
+			// priority selection
+			for (int i = 0; i < numElim; i++) {
+				int f = freq.get(tied.get(i));
+				if (f > highest) {
+					index = i;
+					highest = f;
+				}
+			}
+			int next = tied.remove(index);
+			timeSelectNext += System.nanoTime() - start;
+
+			start = System.nanoTime();
+			child = new Node(state, next);
+			timeFork += System.nanoTime() - start;
+
+			elect(child);
+
+			if (cache) {
+				start = System.nanoTime();
+				numNode++;
+				visited.add(child.state);
+				timeCacheEval += System.nanoTime() - start;
+			}
+
+			if (pruning && canPrune(state))
+				continue;
+		}
+
+		if (cache) {
+			numNode++;
+			visited.add(state);
+		}
+	}
+
 	List<Integer> getHeuristicLoser(List<Integer> state, int[] scores) {
 		int[] rank = MathLib.getRank(scores, false);
 		long start = System.nanoTime();
-		int m = state.size();
-		int d = (m - 1) * (m - 2) * n / 2;
+		int d = -n / 2;
 
+		List<Integer> losers = new ArrayList<>();
 		int i = 0;
-		int remaining = MathLib.Data.sum(scores);
 		for (; i < scores.length; i++) {
 			int score = scores[rank[i]];
-			remaining -= score;
-			if (score + d > remaining)
-				break;
-			d -= (m - 2 - i);
+			if (score < d)
+				losers.add(state.get(rank[i]));
 		}
-
-		if (i == m - 1) {
-			timeHeuristicEval += System.nanoTime() - start;
-			return null;
-		}
-
-		i += 1;
-		List<Integer> losers = new ArrayList<>();
-		for (; i < m; i++)
-			losers.add(state.get(rank[i]));
 		timeHeuristicEval += System.nanoTime() - start;
-		return losers;
-	}
 
-	public void getPrefMatrix(Profile<Integer> profile) {
-		prefMatrix = new HashMap<>();
-		int[] votes = profile.votes;
-		int m = profile.getNumItem();
-		for (int k = 0; k < votes.length; k++) {
-			Integer[] pref = profile.data[k];
-			for (int i = 0; i < m; i++) {
-				Map<Integer, Integer> outlink = prefMatrix.get(pref[i]);
-				if (outlink == null) {
-					outlink = new HashMap<>();
-					prefMatrix.put(pref[i], outlink);
-				}
-
-				for (int j = i + 1; j < m; j++) {
-					if (outlink.get(pref[j]) == null)
-						outlink.put(pref[j], votes[k]);
-					else
-						outlink.put(pref[j], outlink.get(pref[j]) + votes[k]);
-				}
-			}
-		}
+		if (losers.isEmpty())
+			return null;
+		else
+			return losers;
 	}
 
 	public int[] scoring(Profile<Integer> profile, List<Integer> state) {
-		if (prefMatrix == null)
-			getPrefMatrix(profile);
-
 		numScoring++;
 		long start = System.nanoTime();
 
-		int m = state.size();
-		int[] scores = new int[m];
-
-		Map<Integer, Integer> outlink;
-		for (int i = 0; i < m; i++) {
-			int item1 = state.get(i);
-			outlink = prefMatrix.get(item1);
-			for (int item2 : state) {
-				if (item2 == item1 || outlink.get(item2) == null)
+		int[] votes = profile.votes;
+		int[] scores = new int[state.size()];
+		int c = 0;
+		for (Integer[] pref : profile.data) {
+			for (int i = pref.length - 1; i >= 0; i--) {
+				int item = pref[i];
+				int index = state.indexOf(item);
+				/** item has been eliminated **/
+				if (index == -1)
 					continue;
-				scores[i] += outlink.get(item2);
+
+				scores[index] -= votes[c];
+				break;
 			}
+			c++;
+		}
+		timeScoring += System.nanoTime() - start;
+		return scores;
+	}
+
+	/**
+	 * @param profile
+	 * @param state
+	 * @return scores in terms of both first and last choices for each candidate
+	 *         in state
+	 */
+	int[][] scoringFirstAndLast(Profile<Integer> profile, List<Integer> state) {
+		numScoring++;
+		long start = System.nanoTime();
+
+		int[] votes = profile.votes;
+		int[][] scores = new int[2][state.size()];
+		int c = 0;
+		for (Integer[] pref : profile.data) {
+			for (int i = 0; i < pref.length; i++) {
+				int item = pref[i];
+				int index = state.indexOf(item);
+				/** item has been eliminated **/
+				if (index == -1)
+					continue;
+				scores[0][index] += votes[c];
+				break;
+			}
+
+			for (int i = pref.length - 1; i >= 0; i--) {
+				int item = pref[i];
+				int index = state.indexOf(item);
+				/** item has been eliminated **/
+				if (index == -1)
+					continue;
+				scores[1][index] += votes[c];
+				break;
+			}
+			c++;
 		}
 		timeScoring += System.nanoTime() - start;
 		return scores;
@@ -217,13 +277,11 @@ public class Baldwin extends STVPlus2 {
 		this.timeComputePriority = 0;
 
 		this.profile = profile;
-		this.prefMatrix = null;
-		List<Integer> state = Arrays.asList(items);
-
+		List<Integer> state = new ArrayList<>(Arrays.asList(items));
 		freq = new HashMap<>();
-		BruteForceBaldwin ruleBF = null;
+		BruteForceCoombs ruleBF = null;
 		if (sampling) {
-			ruleBF = new BruteForceBaldwin();
+			ruleBF = new BruteForceCoombs();
 			List<Integer> winners = ruleBF.getAllWinners(profile, state.size());
 			for (Integer item : state)
 				freq.put(item, ruleBF.countElected.get(item));
@@ -235,7 +293,7 @@ public class Baldwin extends STVPlus2 {
 		}
 
 		this.begin = System.nanoTime();
-		this.numItemTotal = items.length;
+		this.numItemTotal = state.size();
 		this.root = new Node(state);
 		this.trace = new HashMap<>();
 		this.n = profile.numVoteTotal;
@@ -270,21 +328,20 @@ public class Baldwin extends STVPlus2 {
 		TickClock.beginTick();
 
 		String base = "/Users/chjiang/Documents/csc/";
-		String dataset = "soc-3-baldwin";
+		String dataset = "soc-3";
 
-		boolean heuristic = false, cache = false, pruning = false;
+		boolean heuristic = false, cache = true, pruning = true;
 		boolean sampling = false, recursive = false;
-		int pf = 0;
-		
-		Baldwin rule = new Baldwin(heuristic, cache, pruning, sampling, recursive, pf);
+		int pf = 2;
+		Coombs rule = new Coombs(heuristic, cache, pruning, sampling, recursive, pf);
 
-		Path input = Paths.get(base + dataset + "/M10N90-999.csv");
+		Path input = Paths.get(base + dataset + "/M10N10-3.csv");
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 		List<Integer> winners = rule.getAllWinners(profile);
 
-		String format = "#node=%d, #score=%d, #cache=%d, t=%f, t_score=%f, winners=%s\n";
-		System.out.printf(format, rule.numNode, rule.numScoring, rule.visited.size(), rule.time, rule.timeScoring,
-				winners);
+		String format = "#node=%d, #score=%d, #cache=%d, #success=%d, t=%f, t_score=%f, winners=%s\n";
+		System.out.printf(format, rule.numNode, rule.numScoring, rule.visited.size(), rule.numNodeWH - rule.numSingleL,
+				rule.time, rule.timeScoring, winners);
 
 		TickClock.stopTick();
 	}

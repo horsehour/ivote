@@ -12,8 +12,8 @@ import java.util.stream.Stream;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 import com.horsehour.vote.rule.Bucklin;
 import com.horsehour.vote.rule.VotingRule;
 

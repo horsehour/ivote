@@ -13,7 +13,6 @@ import java.util.stream.Collectors;
 import com.horsehour.util.MathLib;
 import com.horsehour.util.MulticoreExecutor;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
 import com.horsehour.vote.ScoredItems;
 import com.horsehour.vote.axiom.CondorcetCriterion;
@@ -30,6 +29,7 @@ import com.horsehour.vote.axiom.ReversalSymmetryCriterion;
 import com.horsehour.vote.axiom.SchwarzCriterion;
 import com.horsehour.vote.axiom.SmithCriterion;
 import com.horsehour.vote.axiom.VotingAxiom;
+import com.horsehour.vote.data.DataEngine;
 import com.horsehour.vote.train.Eval;
 
 /**

@@ -17,13 +17,11 @@ import java.time.temporal.TemporalField;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Spliterator;
 import java.util.Spliterators;
-import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -318,47 +316,16 @@ public class HowAndWhy {
 			System.err.println();
 		}
 	}
-
-	public static void main(String[] args) throws IOException {
-		TickClock.beginTick();
-
-		long t1 = 0, t2 = 0, t0 = 0;
-		for (int k = 0; k < 8379540; k++) {
-			long begin = System.currentTimeMillis();
-			List<Integer> list = MathLib.Rand.sample(1, 50, 30);
-			t0 += System.currentTimeMillis() - begin;
-
-			begin = System.currentTimeMillis();
-			Map<Integer, List<Integer>> map2 = new TreeMap<>(Collections.reverseOrder());
-			for (int i = 0; i < list.size(); i++) {
-				int key = list.get(i);
-				List<Integer> member = map2.get(key);
-				if (member == null)
-					member = new ArrayList<>();
-				member.add(i);
-				map2.put(key, member);
-			}
-
-			t1 += System.currentTimeMillis() - begin;
-			begin = System.currentTimeMillis();
-			Map<Integer, List<Integer>> map = new HashMap<>();
-			for (int i = 0; i < list.size(); i++) {
-				int key = list.get(i);
-				List<Integer> member = map.get(key);
-				if (member == null)
-					member = new ArrayList<>();
-				member.add(i);
-				map.put(key, member);
-			}
-
-			List<Integer> keys = new ArrayList<>(map.keySet());
-			Collections.sort(keys);
-
-			t2 += System.currentTimeMillis() - begin;
-		}
-
-		System.out.println(t1 + "," + t2 + ", " + t0 + "=" + (t1 + t2 + t0));
-
-		TickClock.stopTick();
+	
+	public static void initListFixedSize(){
+		List<Integer> list = Collections.nCopies(5, 1);
+		System.out.println(list);
+	}
+	
+	public static void main(String[] args){
+		List<Integer> list = new ArrayList<>(Collections.nCopies(5, 1));
+		System.out.println(list);
+		list.set(0, 2);
+		System.out.println(list);
 	}
 }

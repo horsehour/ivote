@@ -1,4 +1,4 @@
-package com.horsehour.vote;
+package com.horsehour.vote.data;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,7 +13,7 @@ import java.util.stream.Stream;
 
 import com.horsehour.util.MulticoreExecutor;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.data.VoteLab;
+import com.horsehour.vote.Profile;
 
 /**
  *
@@ -24,11 +24,11 @@ import com.horsehour.vote.data.VoteLab;
  */
 
 public class VoteDataSet {
-	public static String dataset1 = "/Users/chjiang/Documents/csc/soc-1/";
-	public static String dataset2 = "/Users/chjiang/Documents/csc/soc-2/";
-	public static String dataset3 = "/Users/chjiang/Documents/csc/soc-3/";
-	public static String dataset4 = "/Users/chjiang/Documents/csc/soc-4/";
-	public static String dataset5 = "/Users/chjiang/Documents/csc/soc-5/";
+	public static String dataset1 = "/users/chjiang/github/csc/soc-1/";
+	public static String dataset2 = "/users/chjiang/github/csc/soc-2/";
+	public static String dataset3 = "/users/chjiang/github/csc/soc-3/";
+	public static String dataset4 = "/users/chjiang/github/csc/soc-4/";
+	public static String dataset5 = "/users/chjiang/github/csc/soc-5/";
 
 	public static void generateFullProfileSpace(int numItem) throws IOException {
 		DataEngine.generateFullProfileSpace(numItem, dataset1);

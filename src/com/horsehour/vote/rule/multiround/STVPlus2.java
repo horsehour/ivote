@@ -1,4 +1,4 @@
-package com.horsehour.vote.rule.multiseat;
+package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -17,8 +17,8 @@ import java.util.TreeMap;
 
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
-import com.horsehour.vote.DataEngine;
 import com.horsehour.vote.Profile;
+import com.horsehour.vote.data.DataEngine;
 
 import smile.classification.LogisticRegression;
 
@@ -584,7 +584,6 @@ public class STVPlus2 {
 		LinkedList<Node> fringe = new LinkedList<>();
 		// PriorityQueue<Node> fringe = new PriorityQueue<Node>(10, comparator);
 		fringe.add(root);
-		trace.put(numNode, numWinner);
 		TreeMap<Integer, List<Integer>> tiers = null;
 		Node next = null;
 		while (!fringe.isEmpty()) {
@@ -787,7 +786,6 @@ public class STVPlus2 {
 		this.root = new Node(state);
 
 		this.trace = new HashMap<>();
-		this.trace.put(numWinner, numNode);
 		if (recursive)
 			elect(root);
 		else
@@ -815,18 +813,18 @@ public class STVPlus2 {
 		return winners;
 	}
 
-	public static void main13(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 
-		String base = "/Users/chjiang/Documents/csc/";
-		String dataset = "soc-5-stv";
+		String base = "/users/chjiang/github/csc/";
+		String dataset = "soc-3";
 
 		boolean heuristic = false, cache = true, pruning = true;
 		boolean sampling = false, recursive = false;
 		int pFunction = 0;
 
 		STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
-		Path input = Paths.get(base + dataset + "/M80N70-23.csv");
+		Path input = Paths.get(base + dataset + "/M10N10-1.csv");
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 		List<Integer> winners = rule.getAllWinners(profile);
 
@@ -834,6 +832,8 @@ public class STVPlus2 {
 		System.out.printf(format, rule.numNode, rule.numScoring, rule.visited.size(), rule.numNodeWH - rule.numSingleL,
 				rule.time, rule.timeScoring, winners);
 
+		System.out.println(rule.trace);
+		
 		TickClock.stopTick();
 	}
 }

@@ -1,4 +1,4 @@
-package com.horsehour.vote;
+package com.horsehour.vote.data;
 
 import java.io.IOException;
 import java.nio.file.CopyOption;
@@ -38,9 +38,12 @@ import org.apache.commons.math3.util.CombinatoricsUtils;
 import com.horsehour.util.Ace;
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
+import com.horsehour.vote.ChoiceTriple;
+import com.horsehour.vote.Profile;
+import com.horsehour.vote.ProfileIterator;
+import com.horsehour.vote.Selection;
 import com.horsehour.vote.axiom.MonotonicityCriterion;
 import com.horsehour.vote.axiom.NeutralityCriterion;
-import com.horsehour.vote.data.VoteLab;
 import com.horsehour.vote.rule.Borda;
 import com.horsehour.vote.rule.Bucklin;
 import com.horsehour.vote.rule.Condorcet;
@@ -55,8 +58,8 @@ import com.horsehour.vote.rule.RankedPairs;
 import com.horsehour.vote.rule.Schulze;
 import com.horsehour.vote.rule.Veto;
 import com.horsehour.vote.rule.VotingRule;
-import com.horsehour.vote.rule.multiseat.Position;
-import com.horsehour.vote.rule.multiseat.PrefProfile;
+import com.horsehour.vote.rule.multiround.Position;
+import com.horsehour.vote.rule.multiround.PrefProfile;
 
 /**
  * Preference engine generate preferences, preference profiles and extracting
@@ -162,7 +165,7 @@ public class DataEngine {
 	 *            true), anonymous equivalent classes of profiles (fpp = false)
 	 * @return preference profiles in terms of stream
 	 */
-	static Stream<Profile<Integer>> getPreferenceProfiles(int numItem, int numVote, boolean fpp) {
+	public static Stream<Profile<Integer>> getPreferenceProfiles(int numItem, int numVote, boolean fpp) {
 		List<Integer> itemList = IntStream.range(0, numItem).boxed().collect(Collectors.toList());
 		return getPreferenceProfiles(itemList, numVote, fpp);
 	}
@@ -826,7 +829,7 @@ public class DataEngine {
 		Profile<Integer> profile = new Profile<>(data);
 		if (compact)
 			profile = profile.compact();
-		
+
 		return profile;
 	}
 
@@ -1800,14 +1803,14 @@ public class DataEngine {
 		TickClock.stopTick();
 	}
 
-	public static void main11(String[] args) throws IOException {
+	public static void main222(String[] args) throws IOException {
 		TickClock.beginTick();
 
-		String baseFile = "/Users/chjiang/Documents/csc/";
-		String dataset = "soc-33";
+		String baseFile = "/Users/chjiang/GitHub/csc/";
+		String dataset = "soc-6";
 
 		int s = 2000;
-		String[] rules = { "coombs" };
+		String[] rules = { "stv" };
 		for (String rule : rules) {
 			Files.createDirectories(Paths.get(baseFile + dataset + "-" + rule + "/"));
 			for (int i = 1; i <= 3; i++) {
@@ -1819,7 +1822,33 @@ public class DataEngine {
 				}
 			}
 		}
+
 		TickClock.stopTick();
+	}
+
+	public static void main12(String[] args) {
+		int m = 50;
+		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
+		
+//		Set<Integer[]> permList = new HashSet<>();
+		StringBuffer sb = null;
+		Path file = Paths.get("/Users/chjiang/GitHub/courses/pcp/assignment5/population.txt");
+		for (int i = 0; i < 819200; i++) {
+			sb = new StringBuffer();
+			Integer[] perm = DataEngine.getRandomPermutation(m);
+//			if (permList.contains(perm))
+//				continue;
+//			else
+//				permList.add(perm);
+			sb.append(Arrays.toString(perm)).append("\n");
+
+			try {
+				Files.write(file, sb.toString().getBytes(), options);
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
 	}
 
 	public static void main0000(String[] args) throws IOException {
