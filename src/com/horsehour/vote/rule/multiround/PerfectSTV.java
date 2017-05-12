@@ -124,6 +124,7 @@ public class PerfectSTV {
 				node.winners.add(state.get(0));
 				leaves.add(node); // collect all leaves
 				visited.put(state, node);
+				trace.put(++numWinner, ++numNode);
 				continue;
 			}
 
@@ -137,6 +138,7 @@ public class PerfectSTV {
 			}
 			fringe.addAll(node.children);
 			visited.put(state, node);// label current state as visited
+			numNode++;
 		}
 	}
 
@@ -209,8 +211,6 @@ public class PerfectSTV {
 		this.leaves = new ArrayList<>();
 
 		this.trace = new HashMap<>();
-		this.trace.put(numWinner, numNode);
-
 		this.dfs();
 
 		List<Integer> winners = new ArrayList<>();
@@ -663,18 +663,21 @@ public class PerfectSTV {
 		TickClock.stopTick();
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main123(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/github/csc/";
-//		String dataset = "soc-3-hardcase";
-		String dataset = "soc-6-stv";
+		String dataset = "soc-3-hardcase";
+		// String dataset = "soc-6-stv";
 
-		Path input = Paths.get(base + dataset + "/M10N40-89.csv");
+		// String dataset = "stv-m30n30-7000";
+
+		Path input = Paths.get(base + dataset + "/M20N20-5.csv");
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 
 		PerfectSTV rule = new PerfectSTV();
 		System.out.println(rule.getAllWinners(profile));
+		System.out.println(rule.trace);
 
 		int signal = 0;
 		if (signal == 0)
@@ -690,6 +693,52 @@ public class PerfectSTV {
 		String tree = rule.getVotingTree(rule.root);
 		Files.write(Paths.get(base + "/votetree/stv.json"), tree.getBytes());
 
+		TickClock.stopTick();
+	}
+
+	public static void main(String[] args) throws IOException {
+		TickClock.beginTick();
+
+		String base = "/users/chjiang/github/csc/";
+		String dataset = "soc-3-hardcase";
+
+		PerfectSTV rule = new PerfectSTV();
+
+		boolean heuristic = false, cache = true, pruning = true;
+		boolean sampling = false, recursive = false;
+		int pFunction = 0;
+		STVPlus2 stv = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
+
+		Path output1 = Paths.get("/users/chjiang/github/csc/ed.perfect.txt");
+		Path output2 = Paths.get("/users/chjiang/github/csc/ed.stv.txt");
+		
+		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
+
+		Files.list(Paths.get(base + dataset)).forEach(input -> {
+			StringBuffer sb1 = new StringBuffer(), sb2 = new StringBuffer();
+
+			String name = input.toFile().getName();
+			int ind = name.indexOf("N");
+			int m = Integer.parseInt(name.substring(1, ind));
+			if (m > 30)
+				return;
+
+			Profile<Integer> profile = DataEngine.loadProfile(input);
+			rule.getAllWinners(profile);
+			sb1.append(name).append("\t");
+			sb1.append(rule.trace.values()).append("\n");
+			stv.getAllWinners(profile);
+			sb2.append(name).append("\t");
+			sb2.append(stv.trace.values()).append("\n");
+
+			try {
+				Files.write(output1, sb1.toString().getBytes(), options);
+				Files.write(output2, sb2.toString().getBytes(), options);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		});
+		
 		TickClock.stopTick();
 	}
 }

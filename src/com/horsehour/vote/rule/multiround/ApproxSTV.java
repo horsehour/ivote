@@ -1,6 +1,7 @@
 package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Files;
 import java.nio.file.OpenOption;
 import java.nio.file.Path;
@@ -100,7 +101,7 @@ public class ApproxSTV {
 
 		MathLib.Scale.sum(posteriori);
 		for (int i = 0; i < posteriori.length; i++)
-			p.add(posteriori[i]);
+			p.set(i, posteriori[i]);
 		return p;
 	}
 
@@ -248,19 +249,84 @@ public class ApproxSTV {
 		return perf;
 	}
 
+	public static void analyze() throws IOException {
+		Path input = Paths.get("/Users/chjiang/GitHub/csc/zhibing");
+		List<Path> files = Files.list(input).collect(Collectors.toList());
+
+		String prof = "/Users/chjiang/GitHub/csc/soc-3-hardcase";
+
+		PerfectSTV rule = new PerfectSTV();
+		Profile<Integer> profile;
+		List<Integer> winners = null;
+		List<Integer> ilp = null;
+
+		List<String> lines = null;
+		StringBuffer sb = new StringBuffer();
+		for (Path file : files) {
+			String name = file.toFile().getName();
+			if (!name.endsWith(".csv"))
+				continue;
+
+			sb.append(name).append("\t");
+
+			profile = DataEngine.loadProfile(Paths.get(prof + "/" + name));
+			winners = rule.getAllWinners(profile);
+
+			lines = Files.readAllLines(file);
+			int m = new BigDecimal(lines.get(0)).intValue();
+			int n = new BigDecimal(lines.get(1)).intValue();
+
+			sb.append(m).append("\t");
+			sb.append(n).append("\t");
+
+			sb.append(winners).append("\t");
+			ilp = new ArrayList<>();
+			for (int i = 4; i < lines.size() - 1; i++) {
+				int winner = new BigDecimal(lines.get(i)).intValue();
+				ilp.add(winner);
+			}
+
+			sb.append(ilp).append("\t");
+			sb.append(winners.size()).append("\t").append(ilp.size()).append("\t");
+			if(!subset(winners, ilp))
+				sb.append("0");
+			else
+				sb.append("1");
+			sb.append("\n");
+		}
+		Path output = Paths.get("/Users/chjiang/GitHub/csc/zhibing.csv");
+		Files.write(output, sb.toString().getBytes());
+	}
+
+	public static boolean subset(List<Integer> winners, List<Integer> ilp) {
+		for (int w : winners) {
+			if (!ilp.contains(w))
+				return false;
+		}
+		return true;
+	}
+
 	public static void main(String[] args) throws IOException {
+		analyze();
+	}
+
+	// true winners should be the exact subset of ILP
+	// profiles average number of winner, true
+	// hist how many of them are larger than 1, how many of them are less than 1
+	// # avg number of winners zhibing/average #winners
+	public static void main0(String[] args) throws IOException {
 		TickClock.beginTick();
 		String base = "/users/chjiang/github/csc/";
 		String dataset = "soc-3-hardcase";
 
 		ApproxSTV rule = new ApproxSTV();
 
-		rule.numItemTotal = 10;
+		rule.numItemTotal = 30;
 		rule.exp = new VoteExp();
 		rule.exp.m = rule.numItemTotal;
 		rule.exp.cutoff = 0.5;
 
-		Path model = Paths.get(base + "logistic.mdl");
+		Path model = Paths.get(base + "logistic.m.30.mdl");
 		rule.algo = SerializationUtils.deserialize(Files.readAllBytes(model));
 		rule.exp.algo = rule.algo;
 
@@ -284,7 +350,7 @@ public class ApproxSTV {
 				continue;
 
 			System.out.println(name);
-			
+
 			if (!Files.exists(Paths.get(base + dataset + "/" + name)))
 				profile = DataEngine.loadProfile(Paths.get(base + "soc-3" + "/" + name));
 			else
@@ -307,15 +373,15 @@ public class ApproxSTV {
 			p = new ArrayList<>();
 			p.add(predict);
 			float[] perf = rule.getPerformance(t, p);
-			
+
 			truth.clear();
 			predict.clear();
-			for(int i = 0; i < cells.length; i++){
+			for (int i = 0; i < cells.length; i++) {
 				truth.add(Integer.parseInt(cells[i]));
 				predict.add(0);
 			}
 
-			for(int i : pred.keySet()){
+			for (int i : pred.keySet()) {
 				predict.set(i, pred.get(i).intValue());
 			}
 

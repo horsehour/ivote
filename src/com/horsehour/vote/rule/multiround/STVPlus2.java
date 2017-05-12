@@ -1,8 +1,11 @@
 package com.horsehour.vote.rule.multiround;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -14,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import com.horsehour.util.MathLib;
 import com.horsehour.util.TickClock;
@@ -231,6 +235,7 @@ public class STVPlus2 {
 		}
 		timeComputePriority += System.nanoTime() - start;
 	}
+
 	public Map<Integer, Map<Integer, Integer>> prefMatrix;
 
 	void getPrefMatrix(Profile<Integer> profile) {
@@ -654,6 +659,10 @@ public class STVPlus2 {
 			if (cache)
 				visited.add(state);
 			numNode++;
+
+			//TODO
+			if(numNode > 2000)
+				return;
 		}
 		prefMatrix = null;
 	}
@@ -813,27 +822,114 @@ public class STVPlus2 {
 		return winners;
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main0(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/github/csc/";
 		String dataset = "soc-3";
 
-		boolean heuristic = false, cache = true, pruning = true;
+		boolean heuristic = false, cache = false, pruning = false;
 		boolean sampling = false, recursive = false;
 		int pFunction = 0;
 
 		STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
-		Path input = Paths.get(base + dataset + "/M10N10-1.csv");
+		Path input = Paths.get(base + dataset + "/M10N10-36.csv");
 		Profile<Integer> profile = DataEngine.loadProfile(input);
-		List<Integer> winners = rule.getAllWinners(profile);
+		rule.getAllWinners(profile);
 
-		String format = "#node=%d, #score=%d, #cache=%d, #success=%d, t=%f, t_score=%f, winners=%s\n";
-		System.out.printf(format, rule.numNode, rule.numScoring, rule.visited.size(), rule.numNodeWH - rule.numSingleL,
-				rule.time, rule.timeScoring, winners);
+		// String format = "#node=%d, #score=%d, #cache=%d, #success=%d, t=%f,
+		// t_score=%f, winners=%s\n";
+		// System.out.printf(format, rule.numNode, rule.numScoring,
+		// rule.visited.size(), rule.numNodeWH - rule.numSingleL,
+		// rule.time, rule.timeScoring, winners);
 
 		System.out.println(rule.trace);
-		
+
 		TickClock.stopTick();
 	}
+
+	public static void main88(String[] args) throws IOException {
+		TickClock.beginTick();
+
+		String base = "/users/chjiang/github/csc/";
+		String dataset = "soc-3-hardcase";
+
+		boolean heuristic = true, cache = true, pruning = false;
+		boolean sampling = false, recursive = false;
+		int pFunction = 0;
+
+		STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
+
+		int m = 30, n = 30;
+		Path output = Paths.get(base + "ed.p0r1s0c1.m" + m + "n" + n + ".txt");
+		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
+
+		for (int k = 1; k <= 1500; k++) {
+			String name = "M" + m + "N" + n + "-" + k + ".csv";
+			Path input = Paths.get(base + dataset + "/" + name);
+			if (!Files.exists(input))
+				continue;
+
+			StringBuffer sb = new StringBuffer();
+			System.out.println(name);
+			Profile<Integer> profile = DataEngine.loadProfile(input);
+			rule.getAllWinners(profile);
+			sb.append(name).append("\t").append(rule.time).append("\t");
+			sb.append(rule.trace.values()).append("\n");
+
+			try {
+				Files.write(output, sb.toString().getBytes(), options);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		}
+
+		TickClock.stopTick();
+	}
+
+	public static void main12(String[] args) throws IOException {
+		TickClock.beginTick();
+
+		String input = "/users/chjiang/github/csc/stv-m30n30-7000/";
+		List<Path> files = Files.list(Paths.get(input)).collect(Collectors.toList());
+		Profile<Integer> profile = null;
+
+		boolean heuristic = false, cache = true, pruning = true;
+		boolean sampling = false, recursive = false;
+		int pFunction = 0;
+		STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
+
+		StringBuffer sb = new StringBuffer();
+		for (Path file : files) {
+			profile = DataEngine.loadProfile(file);
+			List<Integer> winners = rule.getAllWinners(profile);
+			sb.append(file.toFile().getName()).append("\t");
+			sb.append(rule.time).append("\t").append(rule.trace).append("\t");
+			sb.append(winners).append("\n");
+		}
+
+		Path output = Paths.get("/users/chjiang/github/csc/winners-stv-m30n30-7000.txt");
+		Files.write(output, sb.toString().getBytes());
+		TickClock.stopTick();
+	}
+
+	// public static void main(String[] args) throws IOException {
+	// TickClock.beginTick();
+	//
+	// String input = "/users/chjiang/github/csc/soc-3-hardcase/";
+	// Path file = Paths.get(input + "M20N20-500.csv");
+	//
+	// boolean heuristic = false, cache = true, pruning = false;
+	// boolean sampling = false, recursive = false;
+	// int pFunction = 0;
+	// STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling,
+	// recursive, pFunction);
+	//
+	// Profile<Integer> profile = DataEngine.loadProfile(file);
+	// rule.getAllWinners(profile);
+	//
+	// System.out.println(rule.trace);
+	//
+	// TickClock.stopTick();
+	// }
 }

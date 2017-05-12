@@ -27,13 +27,9 @@ import com.horsehour.vote.data.FeatureLab;
  */
 
 public class RLSTV extends PerfectSTV {
-	public String dataset = "soc-3";
-	public String base = "/users/chjiang/github/csc/";
-
 	public int numItemTotal;
 	public int numWinner, numNode;
 
-	public List<Double> rewards;
 	public int nSample = 0, maxSample = 50;
 
 	public Map<Integer, Integer> freq;
@@ -240,7 +236,6 @@ public class RLSTV extends PerfectSTV {
 				update(node, optimal);
 				node = optimal;
 			} else {
-				rewards.add(getReward(node));
 				nSample++;
 				// System.out.println(++nSample + " : " + getReward(node));
 				if (nSample < maxSample) {} else
@@ -283,7 +278,6 @@ public class RLSTV extends PerfectSTV {
 			freq.put(i, 0);
 
 		this.trace = new HashMap<>();
-		this.rewards = new ArrayList<>();
 
 		Integer[] items = profile.getSortedItems();
 		List<Integer> state = new ArrayList<>(Arrays.asList(items));
@@ -311,7 +305,6 @@ public class RLSTV extends PerfectSTV {
 			freq.put(i, 0);
 
 		this.trace = new HashMap<>();
-		this.rewards = new ArrayList<>();
 
 		Integer[] items = profile.getSortedItems();
 		List<Integer> cands = new ArrayList<>(Arrays.asList(items));
@@ -374,7 +367,6 @@ public class RLSTV extends PerfectSTV {
 		this.freq = new HashMap<>();
 		for (int i = 0; i < numItemTotal; i++)
 			freq.put(i, 0);
-		this.rewards = new ArrayList<>();
 
 		LinkedList<Node> fringe = new LinkedList<>();
 		fringe.add(root);

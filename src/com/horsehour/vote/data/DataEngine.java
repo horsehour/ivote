@@ -1803,43 +1803,42 @@ public class DataEngine {
 		TickClock.stopTick();
 	}
 
-	public static void main222(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String baseFile = "/Users/chjiang/GitHub/csc/";
-		String dataset = "soc-6";
+		String dataset = "m30n30-7000";
 
-		int s = 2000;
+		int s = 10000;
 		String[] rules = { "stv" };
 		for (String rule : rules) {
 			Files.createDirectories(Paths.get(baseFile + dataset + "-" + rule + "/"));
-			for (int i = 1; i <= 3; i++) {
+			for (int i = 3; i <= 3; i++) {
 				int m = 10 * i;
-				for (int j = 1; j <= 10; j++) {
+				for (int j = 3; j <= 3; j++) {
 					int n = 10 * j;
 					DataEngine.getHardCases(rule, m, n, s, baseFile + dataset + "-" + rule + "/");
 					System.out.println(i + ", " + j);
 				}
 			}
 		}
-
 		TickClock.stopTick();
 	}
 
 	public static void main12(String[] args) {
 		int m = 50;
 		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
-		
-//		Set<Integer[]> permList = new HashSet<>();
+
+		// Set<Integer[]> permList = new HashSet<>();
 		StringBuffer sb = null;
 		Path file = Paths.get("/Users/chjiang/GitHub/courses/pcp/assignment5/population.txt");
 		for (int i = 0; i < 819200; i++) {
 			sb = new StringBuffer();
 			Integer[] perm = DataEngine.getRandomPermutation(m);
-//			if (permList.contains(perm))
-//				continue;
-//			else
-//				permList.add(perm);
+			// if (permList.contains(perm))
+			// continue;
+			// else
+			// permList.add(perm);
 			sb.append(Arrays.toString(perm)).append("\n");
 
 			try {

@@ -39,11 +39,9 @@ import com.horsehour.vote.rule.multiround.VoteResearch;
 import smile.classification.LogisticRegression;
 
 /**
- *
  * @author Chunheng Jiang
  * @version 1.0
  * @since 10:54:14 PM, Feb 15, 2017
- *
  */
 public class VoteLab {
 	static OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
@@ -69,8 +67,8 @@ public class VoteLab {
 	 * @throws IOException
 	 */
 	public static void experiment(String method, String base, String dataset, int[] ms, int[] ns, int[] k,
-			boolean heuristic, boolean cache, boolean pruning, boolean sampling, boolean recursive, int pFunction)
-			throws IOException {
+			boolean heuristic, boolean cache, boolean pruning, boolean sampling, boolean recursive,
+			int pFunction) throws IOException {
 		if (ms == null || ns == null) {
 			experiment(method, base, dataset, -1, -1, null, heuristic, cache, pruning, sampling, recursive, pFunction);
 			return;
@@ -153,9 +151,10 @@ public class VoteLab {
 	 * @param output
 	 * @throws IOException
 	 */
-	static void report(STVPlus2 rule, List<Integer> winners, String name, boolean sampling, Path output)
-			throws IOException {
-		String format = "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%s\t%s\t%s";
+	static void report(STVPlus2 rule, List<Integer> winners, String name, boolean sampling,
+			Path output) throws IOException {
+		String format =
+				"%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%s\t%s\t%s";
 		float ratio = rule.timeScoring + rule.timeCacheEval + rule.timeHeuristicEval + rule.timeFork
 				+ rule.timeSelectNext + rule.timePruneEval + rule.timePred + rule.timeComputePriority;
 
@@ -728,7 +727,6 @@ public class VoteLab {
 	 * 
 	 * @param base
 	 * @param outcome
-	 * 
 	 * @throws IOException
 	 */
 	static List<Pair<double[], Integer>> getTrainSet(String base, Path outcome) throws IOException {
@@ -955,8 +953,8 @@ public class VoteLab {
 			double imprv = pair.getValue() / pair.getKey();
 			sb.append(imprv).append("\t").append(pair.getKey()).append("\r\n");
 		}
-		OpenOption[] options = { StandardOpenOption.CREATE, StandardOpenOption.WRITE,
-				StandardOpenOption.TRUNCATE_EXISTING };
+		OpenOption[] options =
+				{ StandardOpenOption.CREATE, StandardOpenOption.WRITE, StandardOpenOption.TRUNCATE_EXISTING };
 		Files.write(improved, sb.toString().getBytes(), options);
 	}
 
@@ -1016,6 +1014,144 @@ public class VoteLab {
 				e.printStackTrace();
 			}
 		});
+	}
+
+	public float[] earlydiscovery(Path input, Path output, int maxNode) throws IOException {
+		List<String> lines = Files.readAllLines(input);
+		StringBuffer sb = null;
+		String[] cells = null;
+
+		float[] average = new float[maxNode];
+		int nProfile = 0;
+		for (String line : lines) {
+			// if(!line.contains("/"))
+			// continue;
+
+			int ind = line.lastIndexOf("[");
+			line = line.substring(ind + 1).replace("]", "");
+			cells = line.split(", ");
+
+			float[] height = new float[maxNode];
+			Arrays.fill(height, 1.0F);
+
+			int nw = cells.length;
+			int s = 0, t = 0;
+
+			for (int w = 0; w < nw; w++) {
+				t = Integer.parseInt(cells[w]);
+				float val = w * 1.0F / nw;
+				if (t >= maxNode) {
+					Arrays.fill(height, s, maxNode, val);
+					break;
+				} else
+					Arrays.fill(height, s, t, val);
+				s = t;
+			}
+			sb = new StringBuffer();
+			for (int i = 0; i < maxNode; i++) {
+				sb.append(height[i]);
+				if (i == maxNode - 1)
+					sb.append("\n");
+				else
+					sb.append("\t");
+			}
+
+			Files.write(output, sb.toString().getBytes(), options);
+			average = MathLib.Matrix.add(average, height);
+			nProfile += 1;
+		}
+
+		average = MathLib.Matrix.multiply(average, 1.0F / nProfile);
+		return average;
+	}
+
+	public float[] earlydiscovery(Path input, Path truth, Path output, int maxNode) throws IOException {
+		List<String> lines = Files.readAllLines(input);
+		List<String> truthLines = Files.readAllLines(truth);
+
+		StringBuffer sb = null;
+		String[] cells = null;
+
+		float[] average = new float[maxNode];
+		int nProfile = 0;
+		for (int k = 0; k < lines.size(); k++) {
+			String line = lines.get(k);
+			String truthLine = truthLines.get(k);
+
+			int ind = line.lastIndexOf("[");
+			line = line.substring(ind + 1).replace("]", "");
+			cells = line.split(", ");
+
+			float[] height = new float[maxNode];
+			Arrays.fill(height, 1.0F);
+
+			int nw = truthLine.split(",").length;
+			int nc = cells.length;
+
+			int s = 0, t = 0;
+
+			for (int w = 0; w < nc; w++) {
+				t = Integer.parseInt(cells[w]);
+				float val = w * 1.0F / nw;
+				if (t >= maxNode) {
+					Arrays.fill(height, s, maxNode, val);
+					break;
+				} else
+					Arrays.fill(height, s, t, val);
+				s = t;
+			}
+			sb = new StringBuffer();
+			for (int i = 0; i < maxNode; i++) {
+				sb.append(height[i]);
+				if (i == maxNode - 1)
+					sb.append("\n");
+				else
+					sb.append("\t");
+			}
+
+			Files.write(output, sb.toString().getBytes(), options);
+			average = MathLib.Matrix.add(average, height);
+			nProfile += 1;
+		}
+
+		average = MathLib.Matrix.multiply(average, 1.0F / nProfile);
+		return average;
+	}
+
+	public static void main00(String[] args) throws IOException {
+		TickClock.beginTick();
+
+		VoteLab lab = new VoteLab();
+
+		String base = "/Users/chjiang/GitHub/csc/";
+		// Path input = Paths.get(base +
+		// "jun/SOC-3-5-M20N20-STV-20170506-1122.txt");
+		// Path output = Paths.get(base + "ed.imprv.csv");
+
+		// Path input = Paths.get(base +
+		// "jun/SOC-3-6-M20N20-DFS-0506-0120.txt");
+		// Path output = Paths.get(base + "ed.dfs.csv");
+
+		Path input = Paths.get(base + "ed.p0r0s0c0.m30n30.txt");
+		Path truth = Paths.get(base + "ed.base.txt");
+		Path output = Paths.get(base + "ed.p0r0s0c0.m30n30.csv");
+
+		int maxNode = 700;
+
+		float[] average = lab.earlydiscovery(input, truth, output, maxNode);
+		StringBuffer sb = new StringBuffer();
+		sb.append("node").append("\t").append("mean").append("\n");
+		for (int i = 0; i < maxNode; i++) {
+			sb.append(i).append("\t").append(average[i]).append("\n");
+		}
+
+		Files.write(Paths.get(base + "ed.p0r0s0c0.m30n30.mean.csv"), sb.toString().getBytes());
+		// Files.write(Paths.get(base + "ed.imprv.mean.csv"),
+		// sb.toString().getBytes());
+		// Files.write(Paths.get(base + "ed.dfs.mean.csv"),
+		// sb.toString().getBytes());
+
+		TickClock.stopTick();
 	}
 
 	public static void main1111(String[] args) throws IOException {
@@ -1238,7 +1374,7 @@ public class VoteLab {
 		}
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main222(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/documents/csc/";

@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.SerializationUtils;
@@ -61,25 +60,7 @@ public class BoostSTV {
 	public int numWinner;
 	public int rank = 0;
 
-	/**
-	 * numFailH - number of times that the heuristic fails to work and eliminate
-	 * any candidate, numSingleL - number of times to invoke the heuristic and
-	 * to eliminate one single loser, numMultiL - number of times to invoke the
-	 * heuristic and eliminate multiple losers one time
-	 */
-	public int numFailH, numSingleL, numMultiL;
-
-	/**
-	 * number of nodes produced with the heuristic, which is equal to the sum of
-	 * numSingleL and numMultiL; number of nodes produced without the heurisitc
-	 */
-	public int numNodeWH, numNodeWOH;
-
-	/**
-	 * number of nodes expanded, and number of nodes if complete expanded, which
-	 * is larger than numNode.
-	 */
-	public int numNode, numNodeFull;
+	public int numNode;
 
 	/**
 	 * number of times to check the hash set to see if the current state has
@@ -124,7 +105,8 @@ public class BoostSTV {
 
 		public boolean leaf = false;
 		public int depth = 0;
-		// visited order
+
+		/** visited order **/
 		public int order;
 
 		public List<Node> children;
@@ -157,7 +139,7 @@ public class BoostSTV {
 			node.priority = numItemTotal - m;
 			double expectation = 0;
 			for (int i = 0; i < m; i++)
-				if (freq.get(node.state.get(i)) == 0 && node.pred.get(i) > 0.5)
+				if (freq.get(node.state.get(i)) == 0)
 					expectation += node.pred.get(i);
 			node.priority *= expectation;
 		} else if (pFunction == 2) {
@@ -166,16 +148,6 @@ public class BoostSTV {
 				if (freq.get(node.state.get(i)) == 0)
 					node.priority += 1;
 			node.priority += (numItemTotal - m) * numItemTotal;
-		} else if (pFunction == 3) {
-			node.priority = 0;
-			if (node.scoresBorda == null)
-				node.scoresBorda = borda(profile, node.state);
-			for (int i = 0; i < m; i++)
-				if (freq.get(node.state.get(i)) == 0)
-					node.priority += node.scoresBorda[i];
-			int n = profile.numVoteTotal;
-			double maxBorda = m * (m - 1) * n / 2;
-			node.priority /= maxBorda;
 		} else if (pFunction == 4) {
 			node.priority = 0;
 			if (node.scoresPlurality == null)
@@ -184,23 +156,6 @@ public class BoostSTV {
 				if (freq.get(node.state.get(i)) == 0)
 					node.priority += node.scoresPlurality[i];
 			node.priority /= profile.numVoteTotal;
-		} else if (pFunction == 5) {
-			if (node.scoresBorda == null)
-				node.scoresBorda = borda(profile, node.state);
-
-			if (node.scoresPlurality == null)
-				node.scoresPlurality = scoring(profile, node.state);
-			double r1 = 0, r2 = 0;
-			for (int i = 0; i < m; i++)
-				if (freq.get(node.state.get(i)) == 0) {
-					r1 += node.scoresPlurality[i];
-					r2 += node.scoresBorda[i];
-				}
-			r1 /= profile.numVoteTotal;
-			int n = profile.numVoteTotal;
-			double maxBorda = m * (m - 1) * n / 2;
-			r2 /= maxBorda;
-			node.priority = r1 + r2;
 		} else if (pFunction == 6) {
 			// leaf has depth 1.0, root has depth 0.0
 			double depth = (numItemTotal - m) * 1.0d / numItemTotal;
@@ -327,33 +282,6 @@ public class BoostSTV {
 	}
 
 	/**
-	 * Compute alternatives' Borda scores based on preference matrix
-	 * 
-	 * @param profile
-	 * @param state
-	 * @return Borda scores
-	 */
-	int[] borda(Profile<Integer> profile, List<Integer> state) {
-		if (prefMatrix == null)
-			getPrefMatrix(profile);
-
-		int m = state.size();
-		int[] scores = new int[m];
-
-		Map<Integer, Integer> outlink;
-		for (int i = 0; i < m; i++) {
-			int item1 = state.get(i);
-			outlink = prefMatrix.get(item1);
-			for (int item2 : state) {
-				if (item2 == item1 || outlink.get(item2) == null)
-					continue;
-				scores[i] += outlink.get(item2);
-			}
-		}
-		return scores;
-	}
-
-	/**
 	 * Make prediction using the learned algorithm
 	 * 
 	 * @param profile
@@ -380,8 +308,13 @@ public class BoostSTV {
 		}
 
 		MathLib.Scale.sum(posteriori);
+
+		// TODO: biggest bug!!!!!
+		// for (int i = 0; i < posteriori.length; i++)
+		// p.add(posteriori[i]);
+
 		for (int i = 0; i < posteriori.length; i++)
-			p.add(posteriori[i]);
+			p.set(i, posteriori[i]);
 
 		timePred += System.nanoTime() - start;
 		return p;
@@ -672,8 +605,6 @@ public class BoostSTV {
 			next.children = new ArrayList<>();
 			long start = 0;
 			int[] min = MathLib.argmin(scores);
-			numNodeFull += min.length;
-			// generate children based on their plurality scores
 			start = System.nanoTime();
 			for (int i : min) {
 				Node child = new Node(state, state.get(i));
@@ -706,39 +637,82 @@ public class BoostSTV {
 		prefMatrix = null;
 	}
 
-	Function<Integer, String> space = d -> {
-		StringBuffer sb = new StringBuffer();
-		for (int i = 0; i < d; i++)
-			sb.append("  ");
-		return sb.toString();
-	};
+	// TODO: shuffle based on the predicted winners as used in PerfectSTV
+	void shuffle(Node next) {
+		int numChild = next.children.size();
+		if (numChild == 1)
+			return;
 
-	public String getVotingTree(Node node) {
-		String name = node.order + " : " + node.state.toString().replaceAll("\\[|\\]| ", "");
-		if (node.state.size() > 1 && node.winnersPredicted != null)
-			name += node.winnersPredicted;
-		name = "\"name\": \"" + name + "\"";
+		Node child;
+		for (int i = 0; i < numChild; i++) {
+			child = next.children.get(i);
+			if (child.pred == null)
+				child.pred = predict(profile, child.state);
 
-		StringBuffer sb = new StringBuffer();
-		if (node.leaf) {
-			sb.append(space.apply(node.depth)).append("{").append(name).append("}");
-			// sb.append(" \"size\": 200").append("}");
-		} else {
-			int nc = node.children.size();
-			sb.append(space.apply(node.depth)).append("{\n");
-			sb.append(space.apply(node.depth + 1)).append(name).append(", \n");
-			sb.append(space.apply(node.depth + 1)).append("\"children\": [\n");
-			for (int i = 0; i < nc; i++) {
-				Node child = node.children.get(i);
-				sb.append(getVotingTree(child));
-				if (i < nc - 1)
-					sb.append(",");
-				sb.append("\n");
+			child.priority = 0;
+
+			for (int k = 0; k < numItemTotal; k++) {
+				if (freq.get(k) == 0)
+					child.priority += child.pred.get(k);
 			}
-			sb.append(space.apply(node.depth + 1)).append("]\n");
-			sb.append(space.apply(node.depth)).append("}");
 		}
-		return sb.toString();
+
+		/** sort based on priority **/
+		next.children.sort((nd1, nd2) -> Double.compare(nd1.priority, nd2.priority));
+	}
+
+	void elect2() {
+		LinkedList<Node> fringe = new LinkedList<>();
+		fringe.add(root);
+		root.pred = predict(profile, root.state);
+		root.order = rank++;
+
+		Node next = null;
+		while (!fringe.isEmpty()) {
+			next = fringe.pollLast();
+			next.order = rank++;
+
+			List<Integer> state = next.state;
+			int signal = isUniqueRemaining(next);
+			if (signal > 0 || (cache && hasVisited(state)) || (pruning && canPrune(state))) {
+				next.leaf = true;
+				if (signal == 1)
+					continue;
+
+				next.order *= -1;
+				rank -= 1;
+				continue;
+			}
+
+			int[] scores = null;
+			if (next.scoresPlurality == null)
+				scores = scoring(profile, state);
+			else
+				scores = next.scoresPlurality;
+
+			next.children = new ArrayList<>();
+			long start = 0;
+			int[] min = MathLib.argmin(scores);
+			start = System.nanoTime();
+			for (int i : min) {
+				Node child = new Node(state, state.get(i));
+				child.pred = predict(profile, child.state);
+				child.depth = next.depth + 1;
+				child.parent = next;
+				next.children.add(child);
+			}
+
+			timeFork += System.nanoTime() - start;
+
+			shuffle(next);
+
+			fringe.addAll(next.children);
+
+			if (cache)
+				visited.add(state);
+			numNode++;
+		}
+		prefMatrix = null;
 	}
 
 	/**
@@ -749,14 +723,6 @@ public class BoostSTV {
 		this.visited = new HashSet<>();
 
 		this.numNode = 0;
-		this.numNodeWH = 0;
-		this.numNodeWOH = 0;
-		this.numNodeFull = 0;
-
-		this.numFailH = 0;
-		this.numSingleL = 0;
-		this.numMultiL = 0;
-
 		this.numScoring = 0;
 		this.numCacheHit = 0;
 		this.numPruneHit = 0;
@@ -802,6 +768,8 @@ public class BoostSTV {
 		this.trace = new HashMap<>();
 
 		this.elect();
+		// this.elect2();
+
 		time = (System.nanoTime() - begin) / 1e9f;
 
 		timeScoring /= 1e9f;
@@ -825,42 +793,12 @@ public class BoostSTV {
 		return winners;
 	}
 
-	public static void visTree() throws IOException {
-		String base = "/users/chjiang/github/csc/";
-		String dataset = "soc-3";
-
-		boolean cache = true, pruning = true, sampling = false;
-		int pFunction = 0;
-
-		BoostSTV rule = new BoostSTV(cache, pruning, sampling, pFunction);
-		rule.numItemTotal = 30;
-		rule.exp = new VoteExp();
-		rule.exp.m = rule.numItemTotal;
-		rule.exp.cutoff = 0.51;
-
-		Path model = Paths.get(base + "logistic.m.30.mdl");
-		rule.algo = SerializationUtils.deserialize(Files.readAllBytes(model));
-		rule.exp.algo = rule.algo;
-
-		Path input = Paths.get(base + dataset + "/M20N90-963.csv");
-		Profile<Integer> profile = DataEngine.loadProfile(input);
-		List<Integer> winners = rule.getAllWinners(profile);
-
-		String format = "#node=%d, #score=%d, #cache=%d, #success=%d, t=%f, t_score=%f, winners=%s\n";
-		System.out.printf(format, rule.numNode, rule.numScoring, rule.visited.size(), rule.numNodeWH - rule.numSingleL,
-				rule.time, rule.timeScoring, winners);
-		System.out.println(rule.trace);
-
-		String tree = rule.getVotingTree(rule.root);
-		Files.write(Paths.get(base + "/votetree/stv.json"), tree.getBytes());
-	}
-
 	public static void report() throws IOException {
 		String base = "/Users/chjiang/github/csc/";
 		String dataset = "soc-3-hardcase";
 
 		boolean cache = true, pruning = true, sampling = false;
-		int pFunction = 12;
+		int pFunction = 1;
 
 		BoostSTV rule = new BoostSTV(cache, pruning, sampling, pFunction);
 		rule.numItemTotal = 30;
@@ -901,7 +839,7 @@ public class BoostSTV {
 			// sb.append(rule.numNode + "\t" + rule.numScoring + "\t" +
 			// winners).append("\t");
 
-			rule.pFunction = 12;
+			rule.pFunction = 8;
 			winners = rule.getAllWinners(profile);
 
 			// sb.append(rule.numNode + "\t" + rule.numScoring).append("\n");
@@ -920,15 +858,46 @@ public class BoostSTV {
 			sb.append(perf.toString().replaceAll("\\[|\\]| ", "")).append("\t");
 			sb.append(v1.get(sz - 1)).append("\t");
 			sb.append(v2.get(sz - 1)).append("\n");
-			Files.write(Paths.get(base + "diff2.csv"), sb.toString().getBytes(), options);
+			Files.write(Paths.get(base + "diff.csv"), sb.toString().getBytes(), options);
 		}
+	}
+
+	public static void searchTree() throws IOException {
+		String base = "/users/chjiang/github/csc/";
+		 String dataset = "soc-3";
+//		String dataset = "soc-6-stv";
+
+		boolean cache = true, pruning = true, sampling = false;
+		int pFunction = 1;
+
+		BoostSTV rule = new BoostSTV(cache, pruning, sampling, pFunction);
+		rule.numItemTotal = 30;
+		rule.exp = new VoteExp();
+		rule.exp.m = rule.numItemTotal;
+		rule.exp.cutoff = 0.51;
+
+		Path model = Paths.get(base + "logistic.m.30.mdl");
+		rule.algo = SerializationUtils.deserialize(Files.readAllBytes(model));
+		rule.exp.algo = rule.algo;
+
+		Path input = Paths.get(base + dataset + "/M10N10-36.csv");
+		Profile<Integer> profile = DataEngine.loadProfile(input);
+		List<Integer> winners = rule.getAllWinners(profile);
+
+		String format = "#node=%d, #score=%d, #cache=%d, t=%f, t_score=%f, winners=%s\n";
+		System.out.printf(format, rule.numNode, rule.numScoring, rule.visited.size(), rule.time, rule.timeScoring,
+				winners);
+		System.out.println(rule.trace);
+
+		String tree = SearchTree.create(rule.root);
+		Files.write(Paths.get(base + "/votetree/stv.json"), tree.getBytes());
 	}
 
 	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 
-		// visTree();
-		report();
+		 searchTree();
+//		report();
 
 		TickClock.stopTick();
 	}
