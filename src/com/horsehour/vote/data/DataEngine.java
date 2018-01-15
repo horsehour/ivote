@@ -1690,7 +1690,7 @@ public class DataEngine {
 				sb.append("\n");
 			}
 
-			String name = "M" + numItem + "N" + numVote + "-" + s + ".csv";
+			String name = "M" + numItem + "N" + numVote + "-" + (100000 + s) + ".csv";
 			try {
 				socFile = baseFile + "/" + name;
 				Files.write(Paths.get(socFile), sb.toString().getBytes(), options);
@@ -1807,21 +1807,16 @@ public class DataEngine {
 		TickClock.beginTick();
 
 		String baseFile = "/Users/chjiang/GitHub/csc/";
-		String dataset = "m30n30-7000";
+		
+		int m = 0, n = 0;
+		m = n = 30;
+		String dataset = "m" + m + "n" + n;
 
-		int s = 10000;
-		String[] rules = { "stv" };
-		for (String rule : rules) {
-			Files.createDirectories(Paths.get(baseFile + dataset + "-" + rule + "/"));
-			for (int i = 3; i <= 3; i++) {
-				int m = 10 * i;
-				for (int j = 3; j <= 3; j++) {
-					int n = 10 * j;
-					DataEngine.getHardCases(rule, m, n, s, baseFile + dataset + "-" + rule + "/");
-					System.out.println(i + ", " + j);
-				}
-			}
-		}
+		int s = 200000;
+		String rule = "stv";
+		Files.createDirectories(Paths.get(baseFile + dataset + "-" + rule + "/"));
+		DataEngine.getHardCases(rule, m, n, s, baseFile + dataset + "-" + rule + "/");
+		
 		TickClock.stopTick();
 	}
 

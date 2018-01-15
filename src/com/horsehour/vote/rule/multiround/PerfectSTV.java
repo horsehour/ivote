@@ -663,21 +663,21 @@ public class PerfectSTV {
 		TickClock.stopTick();
 	}
 
-	public static void main123(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/github/csc/";
-		String dataset = "soc-3-hardcase";
-		// String dataset = "soc-6-stv";
-
+		String dataset = "soc-3-stv";
+		// String dataset = "soc-5-stv";
 		// String dataset = "stv-m30n30-7000";
 
-		Path input = Paths.get(base + dataset + "/M20N20-5.csv");
+		Path input = Paths.get(base + dataset + "/M20N10-150.csv");
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 
 		PerfectSTV rule = new PerfectSTV();
 		System.out.println(rule.getAllWinners(profile));
 		System.out.println(rule.trace);
+		System.out.println(rule.numNode);
 
 		int signal = 0;
 		if (signal == 0)
@@ -696,7 +696,35 @@ public class PerfectSTV {
 		TickClock.stopTick();
 	}
 
-	public static void main(String[] args) throws IOException {
+	public static void main1111(String[] args) throws IOException {
+		TickClock.beginTick();
+
+		String base = "/users/chjiang/github/csc/";
+		String dataset = "soc-6-stv";
+
+		PerfectSTV rule = new PerfectSTV();
+		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
+		Path output = Paths.get("/users/chjiang/github/pycharm/stv/perf/ed.m5.best.txt");
+		StringBuffer sb = null;
+		for (int n = 3; n <= 10; n++) {
+			for (int k = 1; k <= 5000; k++) {
+				String name = "M5N" + n + "-" + k + ".csv";
+				Path input = Paths.get(base + dataset + "/" + name);
+				Profile<Integer> profile = DataEngine.loadProfile(input);
+				rule.getAllWinners(profile);
+				// System.out.println(rule.trace);
+				rule.getSubOptimalEpisode();
+				sb = new StringBuffer().append(dataset).append("\t").append(name);
+				sb.append("\t").append(rule.trace).append("\n");
+				Files.write(output, sb.toString().getBytes(), options);
+				System.out.println(name);
+			}
+		}
+
+		TickClock.stopTick();
+	}
+
+	public static void main323(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/github/csc/";
@@ -711,7 +739,7 @@ public class PerfectSTV {
 
 		Path output1 = Paths.get("/users/chjiang/github/csc/ed.perfect.txt");
 		Path output2 = Paths.get("/users/chjiang/github/csc/ed.stv.txt");
-		
+
 		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
 
 		Files.list(Paths.get(base + dataset)).forEach(input -> {
@@ -738,7 +766,7 @@ public class PerfectSTV {
 				e.printStackTrace();
 			}
 		});
-		
+
 		TickClock.stopTick();
 	}
 }

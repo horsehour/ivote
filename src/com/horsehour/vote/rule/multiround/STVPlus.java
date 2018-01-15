@@ -646,14 +646,14 @@ public class STVPlus {
 	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 
-		String base = "/Users/chjiang/Documents/csc/";
-		String dataset = "soc-3";
+		String base = "/Users/chjiang/Github/csc/";
+		String dataset = "m40n40-stv";
 
 		boolean heuristic = false, cache = true, pruning = true;
-		boolean sampling = false, queue = true, recursive = false;
+		boolean sampling = false, queue = false, recursive = false;
 
 		STVPlus rule = new STVPlus(heuristic, cache, pruning, sampling, queue, recursive);
-		Path input = Paths.get(base + dataset + "/M20N20-38.csv");
+		Path input = Paths.get(base + dataset + "/M40N40-100023.csv");
 
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 		List<Integer> winners = rule.getAllWinners(profile);

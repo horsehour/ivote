@@ -68,9 +68,8 @@ public class ElectTask implements Callable<Void> {
 			Profile<Integer> profile = DataEngine.loadProfile(socFile);
 			List<Integer> winners = rule.getAllWinners(profile);
 
-			String fmt = "\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%.3f\t%s\n";
-			sb.append(String.format(fmt, rule.numFailH, rule.numSingleL, rule.numMultiL, rule.numNodeWH,
-					rule.numNodeWOH, rule.numNode, rule.numNodeFull, rule.time / 1000.0, winners));
+			String fmt = "\t%d%s\n";
+			sb.append(String.format(fmt, rule.numNode, winners));
 
 			Files.write(outputFile, sb.toString().getBytes(), options);
 			sb = new StringBuffer();

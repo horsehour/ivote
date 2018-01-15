@@ -659,10 +659,6 @@ public class STVPlus2 {
 			if (cache)
 				visited.add(state);
 			numNode++;
-
-			//TODO
-			if(numNode > 2000)
-				return;
 		}
 		prefMatrix = null;
 	}
@@ -822,20 +818,20 @@ public class STVPlus2 {
 		return winners;
 	}
 
-	public static void main0(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/github/csc/";
-		String dataset = "soc-3";
+		String dataset = "soc-5-stv";
 
-		boolean heuristic = false, cache = false, pruning = false;
+		boolean heuristic = false, cache = true, pruning = true;
 		boolean sampling = false, recursive = false;
 		int pFunction = 0;
 
 		STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
-		Path input = Paths.get(base + dataset + "/M10N10-36.csv");
+		Path input = Paths.get(base + dataset + "/M20N20-1519.csv");
 		Profile<Integer> profile = DataEngine.loadProfile(input);
-		rule.getAllWinners(profile);
+		List<Integer> winners = rule.getAllWinners(profile);
 
 		// String format = "#node=%d, #score=%d, #cache=%d, #success=%d, t=%f,
 		// t_score=%f, winners=%s\n";
@@ -843,44 +839,46 @@ public class STVPlus2 {
 		// rule.visited.size(), rule.numNodeWH - rule.numSingleL,
 		// rule.time, rule.timeScoring, winners);
 
-		System.out.println(rule.trace);
+		System.out.println(winners + "," + rule.trace + "," + rule.numNode);
 
 		TickClock.stopTick();
 	}
 
-	public static void main88(String[] args) throws IOException {
+	public static void main231(String[] args) throws IOException {
 		TickClock.beginTick();
 
 		String base = "/users/chjiang/github/csc/";
-		String dataset = "soc-3-hardcase";
+		String dataset = "soc-6-stv";
 
-		boolean heuristic = true, cache = true, pruning = false;
+		boolean heuristic = false, cache = true, pruning = true;
 		boolean sampling = false, recursive = false;
 		int pFunction = 0;
 
 		STVPlus2 rule = new STVPlus2(heuristic, cache, pruning, sampling, recursive, pFunction);
 
-		int m = 30, n = 30;
-		Path output = Paths.get(base + "ed.p0r1s0c1.m" + m + "n" + n + ".txt");
+		Path output = Paths.get(base + "ed.m5.dfs.txt");
 		OpenOption[] options = { StandardOpenOption.APPEND, StandardOpenOption.CREATE, StandardOpenOption.WRITE };
+		
+		int m = 5;
+		for(int n = 3; n <= 10; n++){
+			for(int k = 1; k <= 5000; k++){
+				String name = "M" + m + "N" + n + "-" + k + ".csv";
+				Path input = Paths.get(base + dataset + "/" + name);
+				if (!Files.exists(input))
+					continue;
 
-		for (int k = 1; k <= 1500; k++) {
-			String name = "M" + m + "N" + n + "-" + k + ".csv";
-			Path input = Paths.get(base + dataset + "/" + name);
-			if (!Files.exists(input))
-				continue;
+				StringBuffer sb = new StringBuffer();
+				System.out.println(name);
+				
+				Profile<Integer> profile = DataEngine.loadProfile(input);
+				rule.getAllWinners(profile);
+				sb.append(name).append("\t").append(rule.trace.values()).append("\n");
 
-			StringBuffer sb = new StringBuffer();
-			System.out.println(name);
-			Profile<Integer> profile = DataEngine.loadProfile(input);
-			rule.getAllWinners(profile);
-			sb.append(name).append("\t").append(rule.time).append("\t");
-			sb.append(rule.trace.values()).append("\n");
-
-			try {
-				Files.write(output, sb.toString().getBytes(), options);
-			} catch (IOException e) {
-				e.printStackTrace();
+				try {
+					Files.write(output, sb.toString().getBytes(), options);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}				
 			}
 		}
 

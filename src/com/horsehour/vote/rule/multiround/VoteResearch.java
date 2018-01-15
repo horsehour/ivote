@@ -61,7 +61,7 @@ public class VoteResearch {
 		Path file = null;
 		Profile<Integer> profile;
 
-		STV rule = new STV(heuristic, cache, pruning, sampling, recursive);
+		STV rule = new STV();
 		for (int i = 1; i <= 2000; i++) {
 			String name = "M" + m + "N" + n + "-" + i + ".csv";
 			file = Paths.get(base + dataset + "-hardcase/" + name);
@@ -76,30 +76,8 @@ public class VoteResearch {
 
 				profile = DataEngine.loadProfile(file);
 				List<Integer> winners = rule.getAllWinners(profile);
-
-				String format = "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%s\t%s";
-				float ratio = rule.timeScoring + rule.timeCacheEval + rule.timeHeuristicEval + rule.timeFork
-						+ rule.timeSelectNext + rule.timePruneEval;
-
-				if (rule.time == 0)
-					ratio = 1.0F;
-				else
-					ratio /= rule.time;
-
-				if (sampling) {
-					sb.append(String.format(format + "\t%s\n", name, rule.numItemTotal, rule.numFailH, rule.numSingleL,
-							rule.numMultiL, rule.numScoring, rule.numNodeWH, rule.numNodeWOH, rule.numNode,
-							rule.numNodeFull, rule.numCacheHit, rule.numCacheMiss, rule.numPruneHit, rule.numPruneMiss,
-							rule.time, rule.timeScoring, rule.timeHeuristicEval, rule.timeCacheEval, rule.timePruneEval,
-							rule.timeSampling, rule.timeSelectNext, rule.timeFork, ratio, winners, rule.freq,
-							rule.electedSampling));
-				} else {
-					sb.append(String.format(format + "\n", name, rule.numItemTotal, rule.numFailH, rule.numSingleL,
-							rule.numMultiL, rule.numScoring, rule.numNodeWH, rule.numNodeWOH, rule.numNode,
-							rule.numNodeFull, rule.numCacheHit, rule.numCacheMiss, rule.numPruneHit, rule.numPruneMiss,
-							rule.time, rule.timeScoring, rule.timeHeuristicEval, rule.timeCacheEval, rule.timePruneEval,
-							rule.timeSampling, rule.timeSelectNext, rule.timeFork, ratio, winners, rule.freq));
-				}
+				String format = "%s\t%s";
+				sb.append(String.format(format, name, winners));
 				Files.write(output, sb.toString().getBytes(), options);
 				sb = new StringBuffer();
 			}
@@ -187,7 +165,7 @@ public class VoteResearch {
 	 */
 	public String eval(Path input, boolean heuristic, boolean cache, boolean pruning, boolean sampling,
 			boolean recursive) {
-		STV rule = new STV(heuristic, cache, pruning, sampling, recursive);
+		STV rule = new STV();
 
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 		List<Integer> winners = rule.getAllWinners(profile);
@@ -195,39 +173,16 @@ public class VoteResearch {
 		StringBuffer sb = new StringBuffer();
 		String name = input.toFile().getName();
 
-		String format = "%s\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%f\t%s\t%s";
-		float ratio = rule.timeScoring + rule.timeCacheEval + rule.timeHeuristicEval + rule.timeFork
-				+ rule.timeSelectNext + rule.timePruneEval;
-
-		if (rule.time == 0)
-			ratio = 1.0F;
-		else
-			ratio /= rule.time;
-
-		if (sampling) {
-			sb.append(String.format(format + "\t%s", name, rule.numItemTotal, rule.numFailH, rule.numSingleL,
-					rule.numMultiL, rule.numScoring, rule.numNodeWH, rule.numNodeWOH, rule.numNode, rule.numNodeFull,
-					rule.numCacheHit, rule.numCacheMiss, rule.numPruneHit, rule.numPruneMiss, rule.time,
-					rule.timeScoring, rule.timeHeuristicEval, rule.timeCacheEval, rule.timePruneEval, rule.timeSampling,
-					rule.timeSelectNext, rule.timeFork, ratio, winners, rule.freq, rule.electedSampling));
-		} else {
-			sb.append(String.format(format, name, rule.numItemTotal, rule.numFailH, rule.numSingleL, rule.numMultiL,
-					rule.numScoring, rule.numNodeWH, rule.numNodeWOH, rule.numNode, rule.numNodeFull, rule.numCacheHit,
-					rule.numCacheMiss, rule.numPruneHit, rule.numPruneMiss, rule.time, rule.timeScoring,
-					rule.timeHeuristicEval, rule.timeCacheEval, rule.timePruneEval, rule.timeSampling,
-					rule.timeSelectNext, rule.timeFork, ratio, winners, rule.freq));
-		}
+		String format = "%s\t%s";
+		sb.append(String.format(format, name, winners));
 		return sb.toString();
 	}
 
 	public void eval(String base, String dataset, boolean heuristic, boolean cache, boolean pruning, boolean sampling,
 			boolean recursive) throws IOException {
 		String hp = base + dataset;
-		int h = heuristic ? 1 : 0, c = cache ? 1 : 0, p = pruning ? 1 : 0, s = sampling ? 1 : 0, r = recursive ? 1 : 0;
-		hp += "-h" + h + "c" + c + "p" + p + "s" + s + "r" + r + ".txt";
-
 		Path output = Paths.get(hp);
-		STV rule = new STV(heuristic, cache, pruning, sampling, recursive);
+		STV rule = new STV();
 
 		Path input = Paths.get(base + "/" + dataset);
 		Files.list(input).forEach(path -> {
@@ -558,19 +513,14 @@ public class VoteResearch {
 		String base = "/Users/chjiang/Documents/csc/";
 		String dataset = "soc-3";
 
-		boolean heuristic = false, cache = true, pruning = true, sampling = false, recursive = false;
-
 		Path input = Paths.get(base + dataset + "/M30N30-237.csv");
-		STV rule = new STV(heuristic, cache, pruning, sampling, recursive);
+		STV rule = new STV();
 
 		String format = "#node=%d, #score=%d, t=%f, t_score=%f, t_hash=%f, t_heur=%f, t_new=%f, t_next=%f, t_eva_elected=%f, t_sample=%f, winners=%s\n";
 
 		Profile<Integer> profile = DataEngine.loadProfile(input);
 		List<Integer> winners = rule.getAllWinners(profile);
-
-		System.out.printf(format, rule.numNode, rule.numScoring, rule.time, rule.timeScoring, rule.timeCacheEval,
-				rule.timeHeuristicEval, rule.timeFork, rule.timeSelectNext, rule.timePruneEval, rule.timeSampling,
-				winners);
+		System.out.printf(format, rule.numNode, winners);
 		TickClock.stopTick();
 	}
 

@@ -68,7 +68,7 @@ public class VoteExp {
 
 		double alpha = MathLib.Data.sum(probability) * cutoff;
 		int[] rank = MathLib.getRank(probability, false);
-		// System.out.print(Arrays.toString(rank) + "\t");
+//		 System.out.print(Arrays.toString(rank) + "\t");
 
 		double subsum = 0;
 		for (int r : rank) {
@@ -442,7 +442,7 @@ public class VoteExp {
 				exp.algo = exp.getAdaBoost(samples, items);
 			}
 
-			Files.write(model, SerializationUtils.serialize(exp.algo), options);
+			Files.write(model, SerializationUtils.serialize((Serializable) exp.algo), options);
 
 			double[][] inputs = dataset.get(1).getKey();
 			int[][] outputs = dataset.get(1).getValue();
@@ -472,45 +472,49 @@ public class VoteExp {
 			System.out.println(Arrays.toString(perf) + "\t" + upperRecall + "\t" + upperF1);
 		}
 
-//		exp.algo = SerializationUtils.deserialize(Files.readAllBytes(model));
-//		List<String> lines = Files.readAllLines(Paths.get(base + "winners-stv-soc3.txt"));
-//		Path file = null;
-//		List<Integer> inclusive = null;
-//		Profile<Integer> profile = null;
-//
-//		List<List<Integer>> winnerList = new ArrayList<>();
-//		List<List<Integer>> predList = new ArrayList<>();
-//
-//		StringBuffer sb = new StringBuffer();
-//		for (String line : lines) {
-//			int ind = line.indexOf("\t");
-//			String fnm = line.substring(0, ind);
-//			int numItem = Integer.parseInt(fnm.substring(1, fnm.indexOf("N")));
-//			if (numItem > m)
-//				continue;
-//			else {
-//				file = Paths.get(base + "soc-3-stv/" + fnm);
-//				if (!Files.exists(file))
-//					file = Paths.get(base + "soc-3-hardcase/" + fnm);
-//			}
-//			profile = DataEngine.loadProfile(file);
-//
-//			inclusive = new ArrayList<>();
-//			for (int i = 0; i < numItem; i++)
-//				inclusive.add(i);
-//
-//			double[] features = FeatureLab.getF1(profile, inclusive, m);
-//			List<Integer> pred = exp.mechanism.apply(features, inclusive);
-//			String binary = line.substring(ind + 1).trim();
-//			List<Integer> winners = FeatureLab.hotDecode.apply(binary);
-//
-//			sb.append(fnm + "\t").append(winners).append("\t").append(pred).append("\n");
-//
-//			winnerList.add(winners);
-//			predList.add(pred);
-//		}
-//		sb.append(Arrays.toString(exp.getPerformance(winnerList, predList))).append("\n");
-//		Files.write(Paths.get(base + name + "-soc-3.pred"), sb.toString().getBytes(), options);
+		// exp.algo = SerializationUtils.deserialize(Files.readAllBytes(model));
+		// List<String> lines = Files.readAllLines(Paths.get(base +
+		// "winners-stv-soc3.txt"));
+		// Path file = null;
+		// List<Integer> inclusive = null;
+		// Profile<Integer> profile = null;
+		//
+		// List<List<Integer>> winnerList = new ArrayList<>();
+		// List<List<Integer>> predList = new ArrayList<>();
+		//
+		// StringBuffer sb = new StringBuffer();
+		// for (String line : lines) {
+		// int ind = line.indexOf("\t");
+		// String fnm = line.substring(0, ind);
+		// int numItem = Integer.parseInt(fnm.substring(1, fnm.indexOf("N")));
+		// if (numItem > m)
+		// continue;
+		// else {
+		// file = Paths.get(base + "soc-3-stv/" + fnm);
+		// if (!Files.exists(file))
+		// file = Paths.get(base + "soc-3-hardcase/" + fnm);
+		// }
+		// profile = DataEngine.loadProfile(file);
+		//
+		// inclusive = new ArrayList<>();
+		// for (int i = 0; i < numItem; i++)
+		// inclusive.add(i);
+		//
+		// double[] features = FeatureLab.getF1(profile, inclusive, m);
+		// List<Integer> pred = exp.mechanism.apply(features, inclusive);
+		// String binary = line.substring(ind + 1).trim();
+		// List<Integer> winners = FeatureLab.hotDecode.apply(binary);
+		//
+		// sb.append(fnm +
+		// "\t").append(winners).append("\t").append(pred).append("\n");
+		//
+		// winnerList.add(winners);
+		// predList.add(pred);
+		// }
+		// sb.append(Arrays.toString(exp.getPerformance(winnerList,
+		// predList))).append("\n");
+		// Files.write(Paths.get(base + name + "-soc-3.pred"),
+		// sb.toString().getBytes(), options);
 
 		TickClock.stopTick();
 	}

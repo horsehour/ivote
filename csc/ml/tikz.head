@@ -1,0 +1,27 @@
+\documentclass{standalone}
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+
+%\pgfplotsset{width=10cm, legend columns=1, compat=1.3}
+
+\begin{document}
+
+\begin{tikzpicture}
+\begin{groupplot}[
+group style={group size=2 by 3,vertical sep=2cm,horizontal sep=4cm},
+height=6.5cm,
+width=8cm,
+%xlabel=$n$,
+axis y line=left,
+axis x line=bottom,
+y tick label style={
+        /pgf/number format/.cd,
+            fixed,
+            fixed zerofill,
+            precision=2,
+        /tikz/.cd
+},
+max space between ticks=20,
+legend style={anchor=west,at={(axis description cs:1.05,0.75)},legend style={font=\footnotesize}},
+]

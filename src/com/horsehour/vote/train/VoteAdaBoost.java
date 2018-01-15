@@ -57,7 +57,7 @@ import smile.validation.ClassificationMeasure;
  * @author Haifeng Li
  */
 public class VoteAdaBoost implements SoftClassifier<double[]> {
-	private static final long serialVersionUID = 5326300095992319488L;
+//	private static final long serialVersionUID = 5326300095992319488L;
 
 	private static final Logger logger = LoggerFactory.getLogger(VoteAdaBoost.class);
 
